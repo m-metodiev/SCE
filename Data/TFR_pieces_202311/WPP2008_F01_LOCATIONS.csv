@@ -1,0 +1,279 @@
+﻿Index,country_name,Notes,country_code,ISO3 Alpha-code,Location Type Code,Name,reg_code,reg_name,area_code,area_name,More Developed Regions,Less Developed Regions,Least developed countries,"Less developed regions, excluding least developed countries",HIV/AIDS mortality modelling in WPP 2008 revision,Prevalence rate (%) ,< 1%,1-5%,5-10%,10-20%,> 20%,Max(HIV),Year for max(HIV),Lag = 2007-year(maxHIV),UNAIDS 2006 revision,UNAIDS 2008 revision,Difference (%) base=2006 revision,"with a population of less than 100,000 in 2009"
+1,WORLD,,900,,0,Special groupings,900,World,900,World,,,,,,,,,,,,,,,,,,
+2,More developed regions,a,901,,5,Development group,901,More developed regions,900,World,,,,,,,,,,,,,,,,,,
+3,Less developed regions,b,902,,5,Development group,902,Less developed regions,900,World,,,,,,,,,,,,,,,,,,
+4,Least developed countries,c,941,,5,Development group,941,Least developed countries,902,Less developed regions,,,,,,,,,,,,,,,,,,
+5,"Less developed regions, excluding least developed countries",d,934,,5,Development group,934,"Less developed regions, excluding least developed countries",902,Less developed regions,,,,,,,,,,,,,,,,,,
+6,"Less developed regions, excluding China",,948,,12,Special groupings,948,"Less developed regions, excluding China",902,Less developed regions,,,,,,,,,,,,,,,,,,
+7,Sub-Saharan Africa,e,947,,12,Special groupings,947,Sub-Saharan Africa,902,Less developed regions,,,,,,,,,,,,,,,,,,
+8,AFRICA,,903,,2,Major Area,903,Africa,900,World,,,,,,,,,,,,,,,,,,
+9,Eastern Africa,,910,,3,Region,910,Eastern Africa,903,Africa,,,,,,,,,,,,,,,,,,
+10,Burundi,,108,BDI,4,Country/Area,910,Eastern Africa,903,Africa,No,Yes,Yes,No,Yes,1.96,No,Yes,No,No,No,5.36,1994,13,3.2,2.4,-0.4,No
+11,Comoros,,174,COM,4,Country/Area,910,Eastern Africa,903,Africa,No,Yes,Yes,No,No,0.04,Yes,No,No,No,No,,,,,,,No
+12,Djibouti,,262,DJI,4,Country/Area,910,Eastern Africa,903,Africa,No,Yes,Yes,No,Yes,3.05,No,Yes,No,No,No,3.11,2003,4,3.1,3.1,0,No
+13,Eritrea,,232,ERI,4,Country/Area,910,Eastern Africa,903,Africa,No,Yes,Yes,No,Yes,1.28,No,Yes,No,No,No,1.28,2007,0,2.4,1.2,-0.9,No
+14,Ethiopia,,231,ETH,4,Country/Area,910,Eastern Africa,903,Africa,No,Yes,Yes,No,Yes,2.04,No,Yes,No,No,No,2.54,1997,10,1.9,2.1,0.1,No
+15,Kenya,,404,KEN,4,Country/Area,910,Eastern Africa,903,Africa,No,Yes,No,Yes,Yes,7.82,No,No,Yes,No,No,10.5,1997,10,6,7,0.1,No
+16,Madagascar,,450,MDG,4,Country/Area,910,Eastern Africa,903,Africa,No,Yes,Yes,No,No,0.13,Yes,No,No,No,No,0.13,2004,3,0.5,0.1,-3,No
+17,Malawi,,454,MWI,4,Country/Area,910,Eastern Africa,903,Africa,No,Yes,Yes,No,Yes,11.9,No,No,No,Yes,No,13.8,1998,9,14,12.3,-0.1,No
+18,Mayotte,,175,MYT,4,Country/Area,910,Eastern Africa,903,Africa,No,Yes,No,Yes,No,…,Yes,No,No,No,No,,,,,,,No
+19,Mauritius,1,480,MUS,4,Country/Area,910,Eastern Africa,903,Africa,No,Yes,No,Yes,Yes,1.7,No,Yes,No,No,No,1.7,2006,1,0.6,1.2,0.6,No
+20,Mozambique,,508,MOZ,4,Country/Area,910,Eastern Africa,903,Africa,No,Yes,Yes,No,Yes,12.49,No,No,No,Yes,No,12.49,2007,0,16.1,12.2,-0.3,No
+21,Réunion,,638,REU,4,Country/Area,910,Eastern Africa,903,Africa,No,Yes,No,Yes,No,…,,,,,,,,,,,,No
+22,Rwanda,,646,RWA,4,Country/Area,910,Eastern Africa,903,Africa,No,Yes,Yes,No,Yes,2.79,No,Yes,No,No,No,9.47,1989,18,3,3.1,0,No
+23,Seychelles,,690,SYC,4,Country/Area,910,Eastern Africa,903,Africa,No,Yes,No,Yes,No,…,,,,,,,,,,,,Yes
+24,Somalia,,706,SOM,4,Country/Area,910,Eastern Africa,903,Africa,No,Yes,Yes,No,No,0.54,Yes,No,No,No,No,,,,,,,No
+25,Uganda,,800,UGA,4,Country/Area,910,Eastern Africa,903,Africa,No,Yes,Yes,No,Yes,5.41,No,No,Yes,No,No,13.8,1991,16,6.4,6.1,-0.1,No
+26,United Republic of Tanzania,,834,TZA,4,Country/Area,910,Eastern Africa,903,Africa,No,Yes,Yes,No,Yes,6.29,No,No,Yes,No,No,7.48,1997,10,6.4,6.4,0,No
+27,Zambia,,894,ZMB,4,Country/Area,910,Eastern Africa,903,Africa,No,Yes,Yes,No,Yes,15.16,No,No,No,Yes,No,16.26,1995,12,16.9,15,-0.1,No
+28,Zimbabwe,,716,ZWE,4,Country/Area,910,Eastern Africa,903,Africa,No,Yes,No,Yes,Yes,15.4,No,No,No,Yes,No,28.92,1997,10,20.1,19,-0.1,No
+29,Middle Africa,,911,,3,Region,911,Middle Africa,903,Africa,,,,,,,,,,,,,,,,,,
+30,Angola,,24,AGO,4,Country/Area,911,Middle Africa,903,Africa,No,Yes,Yes,No,Yes,2.1,No,Yes,No,No,No,2.1,2007,0,3.7,2,-0.8,No
+31,Cameroon,,120,CMR,4,Country/Area,911,Middle Africa,903,Africa,No,Yes,No,Yes,Yes,5.09,No,No,Yes,No,No,6.21,1999,8,5.4,5.4,0,No
+32,Central African Republic,,140,CAF,4,Country/Area,911,Middle Africa,903,Africa,No,Yes,Yes,No,Yes,6.33,No,No,Yes,No,No,6.43,2002,5,10.7,6.4,-0.7,No
+33,Chad,,148,TCD,4,Country/Area,911,Middle Africa,903,Africa,No,Yes,Yes,No,Yes,3.49,No,Yes,No,No,No,3.55,2004,3,3.5,3.5,0,No
+34,Congo,,178,COG,4,Country/Area,911,Middle Africa,903,Africa,No,Yes,No,Yes,Yes,3.52,No,Yes,No,No,No,6.04,1993,14,5.3,3.7,-0.4,No
+35,Democratic Republic of the Congo,,180,COD,4,Country/Area,911,Middle Africa,903,Africa,No,Yes,Yes,No,Yes,1.31,No,Yes,No,No,No,1.49,1988,19,3.2,1.3,-1.5,No
+36,Equatorial Guinea,,226,GNQ,4,Country/Area,911,Middle Africa,903,Africa,No,Yes,Yes,No,Yes,3.45,No,Yes,No,No,No,3.7,2002,5,3.2,3.6,0.1,No
+37,Gabon,,266,GAB,4,Country/Area,911,Middle Africa,903,Africa,No,Yes,No,Yes,Yes,5.94,No,No,Yes,No,No,5.96,2005,2,7.8,6,-0.3,No
+38,São Tomé and Príncipe,,678,STP,4,Country/Area,911,Middle Africa,903,Africa,No,Yes,Yes,No,No,…,,,,,,,,,,,,No
+39,Northern Africa,,912,,3,Region,912,Northern Africa,903,Africa,,,,,,,,,,,,,,,,,,
+40,Algeria,,12,DZA,4,Country/Area,912,Northern Africa,903,Africa,No,Yes,No,Yes,No,0.1,Yes,No,No,No,No,,,,,,,No
+41,Egypt,,818,EGY,4,Country/Area,912,Northern Africa,903,Africa,No,Yes,No,Yes,No,0.02,Yes,No,No,No,No,,,,,,,No
+42,Libyan Arab Jamahiriya,,434,LBY,4,Country/Area,912,Northern Africa,903,Africa,No,Yes,No,Yes,No,…,No,No,No,No,Yes,,,,,,,No
+43,Morocco,,504,MAR,4,Country/Area,912,Northern Africa,903,Africa,No,Yes,No,Yes,No,0.11,Yes,No,No,No,No,,,,,,,No
+44,Sudan,,736,SDN,4,Country/Area,912,Northern Africa,903,Africa,No,Yes,Yes,No,Yes,1.43,No,Yes,No,No,No,1.44,2003,4,1.6,1.4,-0.1,No
+45,Tunisia,,788,TUN,4,Country/Area,912,Northern Africa,903,Africa,No,Yes,No,Yes,No,0.05,Yes,No,No,No,No,,,,,,,No
+46,Western Sahara,,732,ESH,4,Country/Area,912,Northern Africa,903,Africa,No,Yes,No,Yes,No,…,,,,,,,,,,,,No
+47,Southern Africa,,913,,3,Region,913,Southern Africa,903,Africa,,,,,,,,,,,,,,,,,,
+48,Botswana,,72,BWA,4,Country/Area,913,Southern Africa,903,Africa,No,Yes,No,Yes,Yes,23.8,No,No,No,No,Yes,26.46,2001,6,26.5,24.9,-0.1,No
+49,Lesotho,,426,LSO,4,Country/Area,913,Southern Africa,903,Africa,No,Yes,Yes,No,Yes,23.23,No,No,No,No,Yes,23.9,2001,6,23.2,23.4,0,No
+50,Namibia,,516,NAM,4,Country/Area,913,Southern Africa,903,Africa,No,Yes,No,Yes,Yes,15.37,No,No,No,Yes,No,15.37,2007,0,19.2,15.3,-0.3,No
+51,South Africa,,710,ZAF,4,Country/Area,913,Southern Africa,903,Africa,No,Yes,No,Yes,Yes,18.12,No,No,No,Yes,No,18.2,2005,2,18.7,18.2,0,No
+52,Swaziland,,748,SWZ,4,Country/Area,913,Southern Africa,903,Africa,No,Yes,No,Yes,Yes,26.13,No,No,No,No,Yes,26.56,2003,4,34.2,26.4,-0.3,No
+53,Western Africa,,914,,3,Region,914,Western Africa,903,Africa,,,,,,,,,,,,,,,,,,
+54,Benin,,204,BEN,4,Country/Area,914,Western Africa,903,Africa,No,Yes,Yes,No,Yes,1.23,No,Yes,No,No,No,1.33,2001,6,1.8,1.3,-0.4,No
+55,Burkina Faso,,854,BFA,4,Country/Area,914,Western Africa,903,Africa,No,Yes,Yes,No,Yes,1.58,No,Yes,No,No,No,2.13,2000,7,2,1.7,-0.1,No
+56,Cape Verde,,132,CPV,4,Country/Area,914,Western Africa,903,Africa,No,Yes,No,Yes,No,…,,,,,,,,,,,,No
+57,Côte d'Ivoire,,384,CIV,4,Country/Area,914,Western Africa,903,Africa,No,Yes,No,Yes,Yes,3.9,No,Yes,No,No,No,6.57,1998,9,7,4.6,-0.5,No
+58,Gambia,,270,GMB,4,Country/Area,914,Western Africa,903,Africa,No,Yes,Yes,No,No,0.85,Yes,No,No,No,No,0.86,2002,5,2.4,0.9,-1.9,No
+59,Ghana,,288,GHA,4,Country/Area,914,Western Africa,903,Africa,No,Yes,No,Yes,Yes,1.93,No,Yes,No,No,No,2.45,1998,9,2.3,2,-0.1,No
+60,Guinea,,324,GIN,4,Country/Area,914,Western Africa,903,Africa,No,Yes,Yes,No,Yes,1.6,No,Yes,No,No,No,1.6,2007,0,1.5,1.5,0,No
+61,Guinea-Bissau,,624,GNB,4,Country/Area,914,Western Africa,903,Africa,No,Yes,Yes,No,Yes,1.85,No,Yes,No,No,No,1.91,2003,4,3.8,1.9,-1,No
+62,Liberia,,430,LBR,4,Country/Area,914,Western Africa,903,Africa,No,Yes,Yes,No,Yes,1.72,No,Yes,No,No,No,1.72,2007,0,3.4,1.5,-1.2,No
+63,Mali,,466,MLI,4,Country/Area,914,Western Africa,903,Africa,No,Yes,Yes,No,Yes,1.46,No,Yes,No,No,No,1.51,2003,4,1.7,1.5,-0.2,No
+64,Mauritania,,478,MRT,4,Country/Area,914,Western Africa,903,Africa,No,Yes,Yes,No,No,0.83,Yes,No,No,No,No,,,,,,,No
+65,Niger,,562,NER,4,Country/Area,914,Western Africa,903,Africa,No,Yes,Yes,No,No,0.79,Yes,No,No,No,No,0.8,2005,2,1.1,0.8,-0.4,No
+66,Nigeria,,566,NGA,4,Country/Area,914,Western Africa,903,Africa,No,Yes,No,Yes,Yes,3.13,No,Yes,No,No,No,3.21,2002,5,3.9,3.2,-0.2,No
+67,Saint Helena,2,654,SHN,4,Country/Area,914,Western Africa,903,Africa,No,Yes,No,Yes,No,…,,,,,,,,,,,,Yes
+68,Senegal,,686,SEN,4,Country/Area,914,Western Africa,903,Africa,No,Yes,Yes,No,No,0.97,Yes,No,No,No,No,,,,,,,No
+69,Sierra Leone,,694,SLE,4,Country/Area,914,Western Africa,903,Africa,No,Yes,Yes,No,Yes,1.68,No,Yes,No,No,No,1.68,2007,0,1.6,1.6,0,No
+70,Togo,,768,TGO,4,Country/Area,914,Western Africa,903,Africa,No,Yes,Yes,No,Yes,3.26,No,Yes,No,No,No,3.59,1999,8,3.2,3.4,0,No
+71,ASIA,,935,,2,Major Area,935,Asia,900,World,,,,,,,,,,,,,,,,,,
+72,Eastern Asia,,906,,3,Region,906,Eastern Asia,935,Asia,,,,,,,,,,,,,,,,,,
+73,China,3,156,CHN,4,Country/Area,906,Eastern Asia,935,Asia,No,Yes,No,Yes,Yes,0.08,Yes,No,No,No,No,0.08,2004,3,0.1,0.1,0,No
+74,"China, Hong Kong SAR",4,344,HKG,4,Country/Area,906,Eastern Asia,935,Asia,No,Yes,No,Yes,No,0,Yes,No,No,No,No,,,,,,,No
+75,"China, Macao SAR",5,446,MAC,4,Country/Area,906,Eastern Asia,935,Asia,No,Yes,No,Yes,No,…,,,,,,,,,,,,No
+76,Dem. People's Republic of Korea,,408,PRK,4,Country/Area,906,Eastern Asia,935,Asia,No,Yes,No,Yes,No,0.1,Yes,No,No,No,No,,,,,,,No
+77,Japan,,392,JPN,4,Country/Area,906,Eastern Asia,935,Asia,Yes,No,No,No,No,0.01,Yes,No,No,No,No,,,,,,,No
+78,Mongolia,,496,MNG,4,Country/Area,906,Eastern Asia,935,Asia,No,Yes,No,Yes,No,0.05,Yes,No,No,No,No,,,,,,,No
+79,Republic of Korea,,410,KOR,4,Country/Area,906,Eastern Asia,935,Asia,No,Yes,No,Yes,No,0.04,Yes,No,No,No,No,,,,,,,No
+80,South-Central Asia,6,921,,3,Region,921,South-Central Asia,935,Asia,,,,,,,,,,,,,,,,,,
+81,Afghanistan,,4,AFG,4,Country/Area,921,South-Central Asia,935,Asia,No,Yes,Yes,No,No,0.02,Yes,No,No,No,No,,,,,,,No
+82,Bangladesh,,50,BGD,4,Country/Area,921,South-Central Asia,935,Asia,No,Yes,Yes,No,No,0.01,Yes,No,No,No,No,,,,,,,No
+83,Bhutan,,64,BTN,4,Country/Area,921,South-Central Asia,935,Asia,No,Yes,Yes,No,No,0.09,Yes,No,No,No,No,,,,,,,No
+84,India,,356,IND,4,Country/Area,921,South-Central Asia,935,Asia,No,Yes,No,Yes,Yes,0.35,Yes,No,No,No,No,0.49,1999,8,0.9,0.4,-1.3,No
+85,Iran (Islamic Republic of),,364,IRN,4,Country/Area,921,South-Central Asia,935,Asia,No,Yes,No,Yes,No,0.19,Yes,No,No,No,No,,,,,,,No
+86,Kazakhstan,,398,KAZ,4,Country/Area,921,South-Central Asia,935,Asia,No,Yes,No,Yes,No,0.13,Yes,No,No,No,No,,,,,,,No
+87,Kyrgyzstan,,417,KGZ,4,Country/Area,921,South-Central Asia,935,Asia,No,Yes,No,Yes,No,0.14,Yes,No,No,No,No,,,,,,,No
+88,Maldives,,462,MDV,4,Country/Area,921,South-Central Asia,935,Asia,No,Yes,Yes,No,No,0.01,Yes,No,No,No,No,,,,,,,No
+89,Nepal,,524,NPL,4,Country/Area,921,South-Central Asia,935,Asia,No,Yes,Yes,No,No,0.49,Yes,No,No,No,No,,,,,,,No
+90,Pakistan,,586,PAK,4,Country/Area,921,South-Central Asia,935,Asia,No,Yes,No,Yes,No,0.1,Yes,No,No,No,No,,,,,,,No
+91,Sri Lanka,,144,LKA,4,Country/Area,921,South-Central Asia,935,Asia,No,Yes,No,Yes,No,0.03,Yes,No,No,No,No,,,,,,,No
+92,Tajikistan,,762,TJK,4,Country/Area,921,South-Central Asia,935,Asia,No,Yes,No,Yes,No,0.28,Yes,No,No,No,No,,,,,,,No
+93,Turkmenistan,,795,TKM,4,Country/Area,921,South-Central Asia,935,Asia,No,Yes,No,Yes,No,<0.1,No,No,No,No,Yes,,,,,,,No
+94,Uzbekistan,,860,UZB,4,Country/Area,921,South-Central Asia,935,Asia,No,Yes,No,Yes,No,0.1,Yes,No,No,No,No,,,,,,,No
+95,South-Eastern Asia,,920,,3,Region,920,South-Eastern Asia,935,Asia,,,,,,,,,,,,,,,,,,
+96,Brunei Darussalam,,96,BRN,4,Country/Area,920,South-Eastern Asia,935,Asia,No,Yes,No,Yes,No,…,No,No,No,No,Yes,,,,,,,No
+97,Cambodia,,116,KHM,4,Country/Area,920,South-Eastern Asia,935,Asia,No,Yes,Yes,No,Yes,0.81,Yes,No,No,No,No,2.09,1997,10,1.6,1.1,-0.5,No
+98,Indonesia,,360,IDN,4,Country/Area,920,South-Eastern Asia,935,Asia,No,Yes,No,Yes,No,0.2,Yes,No,No,No,No,,,,,,,No
+99,Lao People's Democratic Republic,,418,LAO,4,Country/Area,920,South-Eastern Asia,935,Asia,No,Yes,Yes,No,No,0.17,Yes,No,No,No,No,,,,,,,No
+100,Malaysia,,458,MYS,4,Country/Area,920,South-Eastern Asia,935,Asia,No,Yes,No,Yes,No,0.52,Yes,No,No,No,No,,,,,,,No
+101,Myanmar,,104,MMR,4,Country/Area,920,South-Eastern Asia,935,Asia,No,Yes,Yes,No,No,0.68,Yes,No,No,No,No,0.94,1998,9,1.3,0.8,-0.6,No
+102,Philippines,,608,PHL,4,Country/Area,920,South-Eastern Asia,935,Asia,No,Yes,No,Yes,No,0.02,Yes,No,No,No,No,,,,,,,No
+103,Singapore,,702,SGP,4,Country/Area,920,South-Eastern Asia,935,Asia,No,Yes,No,Yes,No,0.15,Yes,No,No,No,No,,,,,,,No
+104,Thailand,,764,THA,4,Country/Area,920,South-Eastern Asia,935,Asia,No,Yes,No,Yes,Yes,1.43,No,Yes,No,No,No,2.12,1995,12,1.3,1.5,0.1,No
+105,Timor-Leste,,626,TLS,4,Country/Area,920,South-Eastern Asia,935,Asia,No,Yes,Yes,No,No,…,No,No,No,No,Yes,,,,,,,No
+106,Viet Nam,,704,VNM,4,Country/Area,920,South-Eastern Asia,935,Asia,No,Yes,No,Yes,No,0.54,Yes,No,No,No,No,,,,,,,No
+107,Western Asia,,922,,3,Region,922,Western Asia,935,Asia,,,,,,,,,,,,,,,,,,
+108,Armenia,,51,ARM,4,Country/Area,922,Western Asia,935,Asia,No,Yes,No,Yes,No,0.13,Yes,No,No,No,No,,,,,,,No
+109,Azerbaijan,,31,AZE,4,Country/Area,922,Western Asia,935,Asia,No,Yes,No,Yes,No,0.15,Yes,No,No,No,No,,,,,,,No
+110,Bahrain,,48,BHR,4,Country/Area,922,Western Asia,935,Asia,No,Yes,No,Yes,No,…,No,No,No,No,Yes,,,,,,,No
+111,Cyprus,,196,CYP,4,Country/Area,922,Western Asia,935,Asia,No,Yes,No,Yes,No,…,No,No,No,No,Yes,,,,,,,No
+112,Georgia,,268,GEO,4,Country/Area,922,Western Asia,935,Asia,No,Yes,No,Yes,No,0.11,Yes,No,No,No,No,,,,,,,No
+113,Iraq,,368,IRQ,4,Country/Area,922,Western Asia,935,Asia,No,Yes,No,Yes,No,…,No,No,No,No,Yes,,,,,,,No
+114,Israel,,376,ISR,4,Country/Area,922,Western Asia,935,Asia,No,Yes,No,Yes,No,0.12,Yes,No,No,No,No,,,,,,,No
+115,Jordan,,400,JOR,4,Country/Area,922,Western Asia,935,Asia,No,Yes,No,Yes,No,…,No,No,No,No,Yes,,,,,,,No
+116,Kuwait,,414,KWT,4,Country/Area,922,Western Asia,935,Asia,No,Yes,No,Yes,No,…,No,No,No,No,Yes,,,,,,,No
+117,Lebanon,,422,LBN,4,Country/Area,922,Western Asia,935,Asia,No,Yes,No,Yes,No,0.12,Yes,No,No,No,No,,,,,,,No
+118,Occupied Palestinian Territory,,275,PSE,4,Country/Area,922,Western Asia,935,Asia,No,Yes,No,Yes,No,…,,,,,,,,,,,,No
+119,Oman,,512,OMN,4,Country/Area,922,Western Asia,935,Asia,No,Yes,No,Yes,No,…,No,No,No,No,Yes,,,,,,,No
+120,Qatar,,634,QAT,4,Country/Area,922,Western Asia,935,Asia,No,Yes,No,Yes,No,<0.1,No,No,No,No,Yes,,,,,,,No
+121,Saudi Arabia,,682,SAU,4,Country/Area,922,Western Asia,935,Asia,No,Yes,No,Yes,No,…,No,No,No,No,Yes,,,,,,,No
+122,Syrian Arab Republic,,760,SYR,4,Country/Area,922,Western Asia,935,Asia,No,Yes,No,Yes,No,…,No,No,No,No,Yes,,,,,,,No
+123,Turkey,,792,TUR,4,Country/Area,922,Western Asia,935,Asia,No,Yes,No,Yes,No,…,No,No,No,No,Yes,,,,,,,No
+124,United Arab Emirates,,784,ARE,4,Country/Area,922,Western Asia,935,Asia,No,Yes,No,Yes,No,…,No,No,No,No,Yes,,,,,,,No
+125,Yemen,,887,YEM,4,Country/Area,922,Western Asia,935,Asia,No,Yes,Yes,No,No,…,No,No,No,No,Yes,,,,,,,No
+126,EUROPE,,908,,2,Major Area,908,Europe,900,World,,,,,,,,,,,,,,,,,,
+127,Eastern Europe,,923,,3,Region,923,Eastern Europe,908,Europe,,,,,,,,,,,,,,,,,,
+128,Belarus,,112,BLR,4,Country/Area,923,Eastern Europe,908,Europe,Yes,No,No,No,No,0.22,Yes,No,No,No,No,,,,,,,No
+129,Bulgaria,,100,BGR,4,Country/Area,923,Eastern Europe,908,Europe,Yes,No,No,No,No,…,No,No,No,No,Yes,,,,,,,No
+130,Czech Republic,,203,CZE,4,Country/Area,923,Eastern Europe,908,Europe,Yes,No,No,No,No,…,No,No,No,No,Yes,,,,,,,No
+131,Hungary,,348,HUN,4,Country/Area,923,Eastern Europe,908,Europe,Yes,No,No,No,No,0.1,Yes,No,No,No,No,,,,,,,No
+132,Poland,,616,POL,4,Country/Area,923,Eastern Europe,908,Europe,Yes,No,No,No,No,0.5,Yes,No,No,No,No,,,,,,,No
+133,Republic of Moldova,,498,MDA,4,Country/Area,923,Eastern Europe,908,Europe,Yes,No,No,No,No,0.38,Yes,No,No,No,No,0.38,2007,0,1,0.2,-3.4,No
+134,Romania,,642,ROU,4,Country/Area,923,Eastern Europe,908,Europe,Yes,No,No,No,No,0.11,Yes,No,No,No,No,,,,,,,No
+135,Russian Federation,,643,RUS,4,Country/Area,923,Eastern Europe,908,Europe,Yes,No,No,No,Yes,1.13,No,Yes,No,No,No,1.13,2007,0,1.1,1.1,0,No
+136,Slovakia,,703,SVK,4,Country/Area,923,Eastern Europe,908,Europe,Yes,No,No,No,No,<0.1,No,No,No,No,Yes,,,,,,,No
+137,Ukraine,,804,UKR,4,Country/Area,923,Eastern Europe,908,Europe,Yes,No,No,No,Yes,1.63,No,Yes,No,No,No,1.63,2007,0,1.4,1.5,0,No
+138,Northern Europe,,924,,3,Region,924,Northern Europe,908,Europe,,,,,,,,,,,,,,,,,,
+139,Channel Islands,7,830,CHI,4,Country/Area,924,Northern Europe,908,Europe,Yes,No,No,No,No,…,,,,,,,,,,,,No
+140,Denmark,,208,DNK,4,Country/Area,924,Northern Europe,908,Europe,Yes,No,No,No,No,0.2,Yes,No,No,No,No,,,,,,,No
+141,Estonia,,233,EST,4,Country/Area,924,Northern Europe,908,Europe,Yes,No,No,No,Yes,1.33,No,Yes,No,No,No,1.33,2007,0,1.3,1.3,0,No
+142,Faeroe Islands,,234,FRO,4,Country/Area,924,Northern Europe,908,Europe,Yes,No,No,No,No,…,,,,,,,,,,,,Yes
+143,Finland,8,246,FIN,4,Country/Area,924,Northern Europe,908,Europe,Yes,No,No,No,No,0.1,Yes,No,No,No,No,,,,,,,No
+144,Iceland,,352,ISL,4,Country/Area,924,Northern Europe,908,Europe,Yes,No,No,No,No,0.2,Yes,No,No,No,No,,,,,,,No
+145,Ireland,,372,IRL,4,Country/Area,924,Northern Europe,908,Europe,Yes,No,No,No,No,0.2,Yes,No,No,No,No,,,,,,,No
+146,Isle of Man,,833,IMN,4,Country/Area,924,Northern Europe,908,Europe,Yes,No,No,No,No,…,,,,,,,,,,,,Yes
+147,Latvia,,428,LVA,4,Country/Area,924,Northern Europe,908,Europe,Yes,No,No,No,No,0.82,Yes,No,No,No,No,,,,,,,No
+148,Lithuania,,440,LTU,4,Country/Area,924,Northern Europe,908,Europe,Yes,No,No,No,No,0.11,Yes,No,No,No,No,,,,,,,No
+149,Norway                                            ,9,578,NOR,4,Country/Area,924,Northern Europe,908,Europe,Yes,No,No,No,No,0.1,Yes,No,No,No,No,,,,,,,No
+150,Sweden,,752,SWE,4,Country/Area,924,Northern Europe,908,Europe,Yes,No,No,No,No,0.1,Yes,No,No,No,No,,,,,,,No
+151,United Kingdom,,826,GBR,4,Country/Area,924,Northern Europe,908,Europe,Yes,No,No,No,No,0.2,Yes,No,No,No,No,,,,,,,No
+152,Southern Europe,,925,,3,Region,925,Southern Europe,908,Europe,,,,,,,,,,,,,,,,,,
+153,Albania,,8,ALB,4,Country/Area,925,Southern Europe,908,Europe,Yes,No,No,No,No,…,No,No,No,No,Yes,,,,,,,No
+154,Andorra,,20,AND,4,Country/Area,925,Southern Europe,908,Europe,Yes,No,No,No,No,…,,,,,,,,,,,,Yes
+155,Bosnia and Herzegovina,,70,BIH,4,Country/Area,925,Southern Europe,908,Europe,Yes,No,No,No,No,<0.1,No,No,No,No,Yes,,,,,,,No
+156,Croatia,,191,HRV,4,Country/Area,925,Southern Europe,908,Europe,Yes,No,No,No,No,<0.1,No,No,No,No,Yes,,,,,,,No
+157,Gibraltar,,292,GIB,4,Country/Area,925,Southern Europe,908,Europe,Yes,No,No,No,No,…,,,,,,,,,,,,Yes
+158,Greece,,300,GRC,4,Country/Area,925,Southern Europe,908,Europe,Yes,No,No,No,No,0.2,Yes,No,No,No,No,,,,,,,No
+159,Holy See,10,336,VAT,4,Country/Area,925,Southern Europe,908,Europe,Yes,No,No,No,No,,,,,,,,,,,,,Yes
+160,Italy,,380,ITA,4,Country/Area,925,Southern Europe,908,Europe,Yes,No,No,No,No,0.4,Yes,No,No,No,No,,,,,,,No
+161,Malta,,470,MLT,4,Country/Area,925,Southern Europe,908,Europe,Yes,No,No,No,No,0.1,Yes,No,No,No,No,,,,,,,No
+162,Montenegro,,499,MNE,4,Country/Area,925,Southern Europe,908,Europe,Yes,No,No,No,No,…,No,No,No,No,Yes,,,,,,,No
+163,Portugal,,620,PRT,4,Country/Area,925,Southern Europe,908,Europe,Yes,No,No,No,No,…,No,No,No,No,Yes,,,,,,,No
+164,San Marino,,674,SMR,4,Country/Area,925,Southern Europe,908,Europe,Yes,No,No,No,No,…,,,,,,,,,,,,Yes
+165,Serbia,,688,SRB,4,Country/Area,925,Southern Europe,908,Europe,Yes,No,No,No,No,0.1,Yes,No,No,No,No,,,,,,,No
+166,Slovenia,,705,SVN,4,Country/Area,925,Southern Europe,908,Europe,Yes,No,No,No,No,<0.1,No,No,No,No,Yes,,,,,,,No
+167,Spain,,724,ESP,4,Country/Area,925,Southern Europe,908,Europe,Yes,No,No,No,No,0.5,Yes,No,No,No,No,,,,,,,No
+168,TFYR Macedonia,11,807,MKD,4,Country/Area,925,Southern Europe,908,Europe,Yes,No,No,No,No,<0.1,No,No,No,No,Yes,,,,,,,No
+169,Western Europe,,926,,3,Region,926,Western Europe,908,Europe,,,,,,,,,,,,,,,,,,
+170,Austria,,40,AUT,4,Country/Area,926,Western Europe,908,Europe,Yes,No,No,No,No,0.2,Yes,No,No,No,No,,,,,,,No
+171,Belgium,,56,BEL,4,Country/Area,926,Western Europe,908,Europe,Yes,No,No,No,No,0.2,Yes,No,No,No,No,,,,,,,No
+172,France,,250,FRA,4,Country/Area,926,Western Europe,908,Europe,Yes,No,No,No,No,0.4,Yes,No,No,No,No,,,,,,,No
+173,Germany,,276,DEU,4,Country/Area,926,Western Europe,908,Europe,Yes,No,No,No,No,0.1,Yes,No,No,No,No,,,,,,,No
+174,Liechtenstein,,438,LIE,4,Country/Area,926,Western Europe,908,Europe,Yes,No,No,No,No,…,,,,,,,,,,,,Yes
+175,Luxembourg,,442,LUX,4,Country/Area,926,Western Europe,908,Europe,Yes,No,No,No,No,0.2,Yes,No,No,No,No,,,,,,,No
+176,Monaco,,492,MCO,4,Country/Area,926,Western Europe,908,Europe,Yes,No,No,No,No,…,,,,,,,,,,,,Yes
+177,Netherlands,,528,NLD,4,Country/Area,926,Western Europe,908,Europe,Yes,No,No,No,No,0.2,Yes,No,No,No,No,,,,,,,No
+178,Switzerland                                       ,,756,CHE,4,Country/Area,926,Western Europe,908,Europe,Yes,No,No,No,No,0.6,Yes,No,No,No,No,,,,,,,No
+179,LATIN AMERICA AND THE CARIBBEAN,,904,,2,Major Area,904,Latin America and the Caribbean,900,World,,,,,,,,,,,,,,,,,,
+180,Caribbean,,915,,3,Region,915,Caribbean,904,Latin America and the Caribbean,,,,,,,,,,,,,,,,,,
+181,Anguilla,,660,AIA,4,Country/Area,915,Caribbean,904,Latin America and the Caribbean,No,Yes,No,Yes,No,…,,,,,,,,,,,,Yes
+182,Antigua and Barbuda,,28,ATG,4,Country/Area,915,Caribbean,904,Latin America and the Caribbean,No,Yes,No,Yes,No,…,,,,,,,,,,,,Yes
+183,Aruba,,533,ABW,4,Country/Area,915,Caribbean,904,Latin America and the Caribbean,No,Yes,No,Yes,No,…,,,,,,,,,,,,No
+184,Bahamas,,44,BHS,4,Country/Area,915,Caribbean,904,Latin America and the Caribbean,No,Yes,No,Yes,Yes,2.97,No,Yes,No,No,No,4.51,1992,15,2.7,3,0.1,No
+185,Barbados,,52,BRB,4,Country/Area,915,Caribbean,904,Latin America and the Caribbean,No,Yes,No,Yes,Yes,1.23,No,Yes,No,No,No,1.23,2007,0,1.4,1.2,-0.2,No
+186,British Virgin Islands,,92,VGB,4,Country/Area,915,Caribbean,904,Latin America and the Caribbean,No,Yes,No,Yes,No,…,,,,,,,,,,,,Yes
+187,Cayman Islands,,136,CYM,4,Country/Area,915,Caribbean,904,Latin America and the Caribbean,No,Yes,No,Yes,No,…,,,,,,,,,,,,Yes
+188,Cuba,,192,CUB,4,Country/Area,915,Caribbean,904,Latin America and the Caribbean,No,Yes,No,Yes,No,0.09,Yes,No,No,No,No,,,,,,,No
+189,Dominica,,212,DMA,4,Country/Area,915,Caribbean,904,Latin America and the Caribbean,No,Yes,No,Yes,No,…,,,,,,,,,,,,Yes
+190,Dominican Republic,,214,DOM,4,Country/Area,915,Caribbean,904,Latin America and the Caribbean,No,Yes,No,Yes,Yes,1.06,No,Yes,No,No,No,1.32,1998,9,1.1,1.1,0,No
+191,Grenada,,308,GRD,4,Country/Area,915,Caribbean,904,Latin America and the Caribbean,No,Yes,No,Yes,No,…,,,,,,,,,,,,No
+192,Guadeloupe,,312,GLP,4,Country/Area,915,Caribbean,904,Latin America and the Caribbean,No,Yes,No,Yes,No,…,,,,,,,,,,,,No
+193,Haiti,,332,HTI,4,Country/Area,915,Caribbean,904,Latin America and the Caribbean,No,Yes,Yes,No,Yes,2.17,No,Yes,No,No,No,2.19,1999,8,3.8,2.2,-0.7,No
+194,Jamaica,,388,JAM,4,Country/Area,915,Caribbean,904,Latin America and the Caribbean,No,Yes,No,Yes,Yes,1.56,No,Yes,No,No,No,1.56,2007,0,1.5,1.5,0,No
+195,Martinique,,474,MTQ,4,Country/Area,915,Caribbean,904,Latin America and the Caribbean,No,Yes,No,Yes,No,…,,,,,,,,,,,,No
+196,Montserrat,,500,MSR,4,Country/Area,915,Caribbean,904,Latin America and the Caribbean,No,Yes,No,Yes,No,…,,,,,,,,,,,,Yes
+197,Netherlands Antilles,,530,ANT,4,Country/Area,915,Caribbean,904,Latin America and the Caribbean,No,Yes,No,Yes,No,…,,,,,,,,,,,,No
+198,Puerto Rico,,630,PRI,4,Country/Area,915,Caribbean,904,Latin America and the Caribbean,No,Yes,No,Yes,No,…,,,,,,,,,,,,No
+199,Saint Kitts and Nevis,,659,KNA,4,Country/Area,915,Caribbean,904,Latin America and the Caribbean,No,Yes,No,Yes,No,…,,,,,,,,,,,,Yes
+200,Saint Lucia,,662,LCA,4,Country/Area,915,Caribbean,904,Latin America and the Caribbean,No,Yes,No,Yes,No,…,,,,,,,,,,,,No
+201,Saint Vincent and the Grenadines,,670,VCT,4,Country/Area,915,Caribbean,904,Latin America and the Caribbean,No,Yes,No,Yes,No,…,,,,,,,,,,,,No
+202,Trinidad and Tobago,,780,TTO,4,Country/Area,915,Caribbean,904,Latin America and the Caribbean,No,Yes,No,Yes,Yes,1.46,No,Yes,No,No,No,1.46,2007,0,2.6,1.5,-0.8,No
+203,Turks and Caicos Islands,,796,TCA,4,Country/Area,915,Caribbean,904,Latin America and the Caribbean,No,Yes,No,Yes,No,…,,,,,,,,,,,,Yes
+204,United States Virgin Islands,,850,VIR,4,Country/Area,915,Caribbean,904,Latin America and the Caribbean,No,Yes,No,Yes,No,…,,,,,,,,,,,,No
+205,Central America,,916,,3,Region,916,Central America,904,Latin America and the Caribbean,,,,,,,,,,,,,,,,,,
+206,Belize,,84,BLZ,4,Country/Area,916,Central America,904,Latin America and the Caribbean,No,Yes,No,Yes,Yes,2.08,No,Yes,No,No,No,2.08,2007,0,2.4,2.1,-0.2,No
+207,Costa Rica,,188,CRI,4,Country/Area,916,Central America,904,Latin America and the Caribbean,No,Yes,No,Yes,No,0.36,Yes,No,No,No,No,,,,,,,No
+208,El Salvador,,222,SLV,4,Country/Area,916,Central America,904,Latin America and the Caribbean,No,Yes,No,Yes,No,0.82,Yes,No,No,No,No,,,,,,,No
+209,Guatemala,,320,GTM,4,Country/Area,916,Central America,904,Latin America and the Caribbean,No,Yes,No,Yes,No,0.75,Yes,No,No,No,No,,,,,,,No
+210,Honduras,,340,HND,4,Country/Area,916,Central America,904,Latin America and the Caribbean,No,Yes,No,Yes,Yes,0.65,Yes,No,No,No,No,1.47,1992,15,1.5,0.7,-1.1,No
+211,Mexico,,484,MEX,4,Country/Area,916,Central America,904,Latin America and the Caribbean,No,Yes,No,Yes,No,0.3,Yes,No,No,No,No,,,,,,,No
+212,Nicaragua,,558,NIC,4,Country/Area,916,Central America,904,Latin America and the Caribbean,No,Yes,No,Yes,No,0.23,Yes,No,No,No,No,,,,,,,No
+213,Panama,,591,PAN,4,Country/Area,916,Central America,904,Latin America and the Caribbean,No,Yes,No,Yes,No,0.98,Yes,No,No,No,No,0.98,2007,0,,,,No
+214,South America,,931,,3,Region,931,South America,904,Latin America and the Caribbean,,,,,,,,,,,,,,,,,,
+215,Argentina,,32,ARG,4,Country/Area,931,South America,904,Latin America and the Caribbean,No,Yes,No,Yes,No,0.54,Yes,No,No,No,No,,,,,,,No
+216,Bolivia,,68,BOL,4,Country/Area,931,South America,904,Latin America and the Caribbean,No,Yes,No,Yes,No,0.15,Yes,No,No,No,No,,,,,,,No
+217,Brazil,,76,BRA,4,Country/Area,931,South America,904,Latin America and the Caribbean,No,Yes,No,Yes,Yes,0.63,Yes,No,No,No,No,0.63,2007,0,0.4,0.6,0.3,No
+218,Chile,,152,CHL,4,Country/Area,931,South America,904,Latin America and the Caribbean,No,Yes,No,Yes,No,0.31,Yes,No,No,No,No,,,,,,,No
+219,Colombia,,170,COL,4,Country/Area,931,South America,904,Latin America and the Caribbean,No,Yes,No,Yes,No,0.58,Yes,No,No,No,No,,,,,,,No
+220,Ecuador,,218,ECU,4,Country/Area,931,South America,904,Latin America and the Caribbean,No,Yes,No,Yes,No,0.32,Yes,No,No,No,No,,,,,,,No
+221,Falkland Islands (Malvinas),,238,FLK,4,Country/Area,931,South America,904,Latin America and the Caribbean,No,Yes,No,Yes,No,…,,,,,,,,,,,,Yes
+222,French Guiana,,254,GUF,4,Country/Area,931,South America,904,Latin America and the Caribbean,No,Yes,No,Yes,No,…,,,,,,,,,,,,No
+223,Guyana,,328,GUY,4,Country/Area,931,South America,904,Latin America and the Caribbean,No,Yes,No,Yes,Yes,2.53,No,Yes,No,No,No,3.58,1994,13,2.4,2.5,0,No
+224,Paraguay,,600,PRY,4,Country/Area,931,South America,904,Latin America and the Caribbean,No,Yes,No,Yes,No,0.59,Yes,No,No,No,No,,,,,,,No
+225,Peru,,604,PER,4,Country/Area,931,South America,904,Latin America and the Caribbean,No,Yes,No,Yes,No,0.45,Yes,No,No,No,No,,,,,,,No
+226,Suriname,,740,SUR,4,Country/Area,931,South America,904,Latin America and the Caribbean,No,Yes,No,Yes,Yes,2.41,No,Yes,No,No,No,2.41,2007,0,1.9,2.1,0.1,No
+227,Uruguay,,858,URY,4,Country/Area,931,South America,904,Latin America and the Caribbean,No,Yes,No,Yes,No,0.56,Yes,No,No,No,No,,,,,,,No
+228,Venezuela (Bolivarian Republic of),,862,VEN,4,Country/Area,931,South America,904,Latin America and the Caribbean,No,Yes,No,Yes,No,0.78,Yes,No,No,No,No,,,,,,,No
+229,NORTHERN AMERICA,,905,,2,Major Area,905,Northern America,900,World,,,,,,,,,,,,,,,,,,
+230,Bermuda,,60,BMU,4,Country/Area,905,Northern America,905,Northern America,Yes,No,No,No,No,…,,,,,,,,,,,,Yes
+231,Canada,,124,CAN,4,Country/Area,905,Northern America,905,Northern America,Yes,No,No,No,No,0.4,Yes,No,No,No,No,,,,,,,No
+232,Greenland,,304,GRL,4,Country/Area,905,Northern America,905,Northern America,Yes,No,No,No,No,…,,,,,,,,,,,,Yes
+233,Saint Pierre and Miquelon,,666,SPM,4,Country/Area,905,Northern America,905,Northern America,Yes,No,No,No,No,…,,,,,,,,,,,,Yes
+234,United States of America,,840,USA,4,Country/Area,905,Northern America,905,Northern America,Yes,No,No,No,Yes,0.6,Yes,No,No,No,No,,,,,,,No
+235,OCEANIA,,909,,2,Major Area,909,Oceania,900,World,,,,,,,,,,,,,,,,,,
+236,Australia/New Zealand,,927,,3,Region,927,Australia/New Zealand,909,Oceania,,,,,,,,,,,,,,,,,,
+237,Australia,12,36,AUS,4,Country/Area,927,Australia/New Zealand,909,Oceania,Yes,No,No,No,No,0.15,Yes,No,No,No,No,,,,,,,No
+238,New Zealand,,554,NZL,4,Country/Area,927,Australia/New Zealand,909,Oceania,Yes,No,No,No,No,0.05,Yes,No,No,No,No,,,,,,,No
+239,Melanesia,,928,,3,Region,928,Melanesia,909,Oceania,,,,,,,,,,,,,,,,,,
+240,Fiji,,242,FJI,4,Country/Area,928,Melanesia,909,Oceania,No,Yes,No,Yes,No,0.1,Yes,No,No,No,No,,,,,,,No
+241,New Caledonia,,540,NCL,4,Country/Area,928,Melanesia,909,Oceania,No,Yes,No,Yes,No,…,,,,,,,,,,,,No
+242,Papua New Guinea,,598,PNG,4,Country/Area,928,Melanesia,909,Oceania,No,Yes,No,Yes,Yes,1.51,No,Yes,No,No,No,1.51,2007,0,1.8,1,-0.8,No
+243,Solomon Islands,,90,SLB,4,Country/Area,928,Melanesia,909,Oceania,No,Yes,Yes,No,No,…,,,,,,,,,,,,No
+244,Vanuatu,,548,VUT,4,Country/Area,928,Melanesia,909,Oceania,No,Yes,Yes,No,No,…,,,,,,,,,,,,No
+245,Micronesia,,954,,3,Region,954,Micronesia,909,Oceania,,,,,,,,,,,,,,,,,,
+246,Guam,,316,GUM,4,Country/Area,954,Micronesia,909,Oceania,No,Yes,No,Yes,No,…,,,,,,,,,,,,No
+247,Kiribati,,296,KIR,4,Country/Area,954,Micronesia,909,Oceania,No,Yes,Yes,No,No,…,,,,,,,,,,,,Yes
+248,Marshall Islands,,584,MHL,4,Country/Area,954,Micronesia,909,Oceania,No,Yes,No,Yes,No,…,,,,,,,,,,,,Yes
+249,Micronesia (Fed. States of),,583,FSM,4,Country/Area,954,Micronesia,909,Oceania,No,Yes,No,Yes,No,…,,,,,,,,,,,,No
+250,Nauru,,520,NRU,4,Country/Area,954,Micronesia,909,Oceania,No,Yes,No,Yes,No,…,,,,,,,,,,,,Yes
+251,Northern Mariana Islands,,580,MNP,4,Country/Area,954,Micronesia,909,Oceania,No,Yes,No,Yes,No,…,,,,,,,,,,,,Yes
+252,Palau,,585,PLW,4,Country/Area,954,Micronesia,909,Oceania,No,Yes,No,Yes,No,…,,,,,,,,,,,,Yes
+253,Polynesia,,957,,3,Region,957,Polynesia,909,Oceania,,,,,,,,,,,,,,,,,,
+254,American Samoa,,16,ASM,4,Country/Area,957,Polynesia,909,Oceania,No,Yes,No,Yes,No,…,,,,,,,,,,,,Yes
+255,Cook Islands,,184,COK,4,Country/Area,957,Polynesia,909,Oceania,No,Yes,No,Yes,No,…,,,,,,,,,,,,Yes
+256,French Polynesia,,258,PYF,4,Country/Area,957,Polynesia,909,Oceania,No,Yes,No,Yes,No,…,,,,,,,,,,,,No
+257,Niue,,570,NIU,4,Country/Area,957,Polynesia,909,Oceania,No,Yes,No,Yes,No,…,,,,,,,,,,,,Yes
+258,Pitcairn,,612,PCN,4,Country/Area,957,Polynesia,909,Oceania,No,Yes,No,Yes,No,…,,,,,,,,,,,,Yes
+259,Samoa,,882,WSM,4,Country/Area,957,Polynesia,909,Oceania,No,Yes,Yes,No,No,…,,,,,,,,,,,,No
+260,Tokelau,,772,TKL,4,Country/Area,957,Polynesia,909,Oceania,No,Yes,No,Yes,No,…,,,,,,,,,,,,Yes
+261,Tonga,,776,TON,4,Country/Area,957,Polynesia,909,Oceania,No,Yes,No,Yes,No,…,,,,,,,,,,,,No
+262,Tuvalu,,798,TUV,4,Country/Area,957,Polynesia,909,Oceania,No,Yes,Yes,No,No,…,,,,,,,,,,,,Yes
+263,Wallis and Futuna Islands,,876,WLF,4,Country/Area,957,Polynesia,909,Oceania,No,Yes,No,Yes,No,…,,,,,,,,,,,,Yes
+264,AIDS: All countries,f,981,,12,Special groupings,981,AIDS: All countries,981,AIDS: All countries,,,,,,,,,,,,,,,,,,
+265,AIDS: More developed regions,g,978,,12,Special groupings,978,AIDS: More developed regions,981,AIDS: All countries,,,,,,,,,,,,,,,,,,
+266,AIDS: Less developed regions,h,979,,12,Special groupings,979,AIDS: Less developed regions,981,AIDS: All countries,,,,,,,,,,,,,,,,,,
+267,AIDS: Least developed countries,i,980,,12,Special groupings,980,AIDS: Least developed countries,981,AIDS: All countries,,,,,,,,,,,,,,,,,,
+268,AIDS: Less than 1 per cent,j,974,,12,Special groupings,974,AIDS: Less than 1 per cent,981,AIDS: All countries,,,,,,,,,,,,,,,,,,
+269,AIDS: Between 1 and 5 per cent,k,973,,12,Special groupings,973,AIDS: Between 1 and 5 per cent,981,AIDS: All countries,,,,,,,,,,,,,,,,,,
+270,AIDS: Between 5 and 10 per cent,l,972,,12,Special groupings,972,AIDS: Between 5 and 10 per cent,981,AIDS: All countries,,,,,,,,,,,,,,,,,,
+271,AIDS: Between 10 and 20 per cent,m,971,,12,Special groupings,971,AIDS: Between 10 and 20 per cent,981,AIDS: All countries,,,,,,,,,,,,,,,,,,
+272,AIDS: More than or equal to 20 per cent,n,970,,12,Special groupings,970,AIDS: More than or equal to 20 per cent,981,AIDS: All countries,,,,,,,,,,,,,,,,,,
+313,AIDS: African countries,13,975,,12,Special groupings,975,AIDS: African countries,981,AIDS: All countries,,,,,,,,,,,,,,,,,,
+319,AIDS: Asian countries,14,976,,12,Special groupings,976,AIDS: Asian countries,981,AIDS: All countries,,,,,,,,,,,,,,,,,,
+324,AIDS: European countries,15,982,,12,Special groupings,982,AIDS: European countries,981,AIDS: All countries,,,,,,,,,,,,,,,,,,
+336,AIDS: Latin American and Caribbean countries,16,977,,12,Special groupings,977,AIDS: Latin American and Caribbean countries,981,AIDS: All countries,,,,,,,,,,,,,,,,,,
+338,AIDS: North American countries,17,983,,12,Special groupings,983,AIDS: North American countries,981,AIDS: All countries,,,,,,,,,,,,,,,,,,
+339,AIDS: Oceanian countries,18,984,,12,Special groupings,984,AIDS: Oceanian countries,981,AIDS: All countries,,,,,,,,,,,,,,,,,,

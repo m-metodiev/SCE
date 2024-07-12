@@ -58,15 +58,6 @@ fit_param(n, p, matList_final, sim_final, id_min=id_min,
           filename_bic = paste(data_source,"sim_final_n195_bic.csv",sep=""))
 read.csv(paste(data_source,"sim_final_n195_param_fit.csv",sep=""))
 
-#TODO: Exclude 1 interaction effect
-
-fit_param(n, p, matList_final, sim_final, id_min=id_min,
-          filename_param_fit=paste(data_source,"sim_final_n195_combined_param_fit.csv",sep=""),
-          filename_ests = paste(data_source,"sim_final_n195_combined_ests.csv",sep=""),
-          filename_bic = paste(data_source,"sim_final_n195_combined_bic.csv",sep=""),
-          link=combined_matList, compute_WSCE=TRUE)
-read.csv(paste(data_source,"sim_final_n195_combined_param_fit.csv",sep=""))
-
 this_list = list()
 this = c(0,0,0,0,0,0,0)
 for(k in (1:(2^length(this)))){
@@ -82,15 +73,13 @@ for(k in (1:(2^length(this)))){
     return(mat_list_full)
   }
   this0= fit_param(n, p, matList_final, sim_final, id_min=id_min,
-                  link=combined_matList_partial, has_missingvalues = TRUE,
-                  save=FALSE)
+                  link=combined_matList_partial, save=FALSE)
   #browser()
   this_list[[k]] = this0
+  print(k)
   #browser()
 }
 
-save(this_list,file="huge_data_10.Rdata")
-load(file="huge_data_10.Rdata")
 bics = sapply(1:length(this_list),function(s) this_list[[s]][[3]])
 simple_model_bic = sort(bics)[(sort(bics)<4796.5)&(sort(bics)>4796)]
 simple_model_ix = which((sort(bics)<4796.5)&(sort(bics)>4796))
@@ -150,42 +139,57 @@ names(df) = c("0comcol","1reg", "2global", "3contig",
               "4comcol and reg", "5comcol and contig", 
               "6reg and contig")
 
-# correct: When the spatial effect is missing, we are down TWO parameters, not 1
+# When the spatial effect is missing, we are down TWO parameters, not 1
 p=11
 sort_bics = sort(bics)[simple_sequence]
 sort_bics[is.na(df$'3contig')] = sort_bics[is.na(df$'3contig')] - log(p)
 rownames(df) = round(sort_bics,1)
-library(viridis)
-ggheatmap(df) +
-  scale_fill_viridis() +
-  guides(fill=guide_colorbar("Value")) +
-  scale_x_discrete( labels = expression("comcol","sameRegion","intercept","contig","comcol and sameRegion","comcol and contig", "sameRegion and contig"))+
-  scale_y_discrete(limits = rownames(df)) +
-  annotate('rect', xmin = 0.5, xmax = 7.5, ymin = 0.5, ymax = 1.5,
-           fill = NA, color = 'magenta', size = 1)
+write.csv(df,file=paste(data_source,"sim_final_n195_model_choice.csv",sep=""))
+
 round(df[1,],5)
 matList_final$Gl[[1]] = matrix(0,n,n)
 write_param(t(c(df_test[1,])),filename=paste(data_source,"sim_final_n195_combined_param_fit.csv",sep=""),
             matList = matList_final, link=combined_matList)
-ggsave("atelier/real_data_n195_modelchoice.pdf", width=12.6,height=7.14)
 round(df[rownames(df)=="0",],3)
 
-
-combined_matList = function(matList){
+# calculate SCE on final model
+combined_matList_partial = function(matList){
   #browser()
-  matList_full = c(matList$Fk,matList$Gl)
-  counter = length(matList_full)
-  sequence = seq_along(matList_full)
-  #calculate all possible Hadamard-products; Exclude global effect matrix
-  for(i in sequence[-length(matList$Fk)]){
-    for(j in sequence[c(-(1:i),-length(matList$Fk))]){
-      counter = counter + 1
-      matList_full[[counter]] = matList_full[[i]] * matList_full[[j]]
-    }
+  comb_mat = combined_matList(matList)
+  mat_list_full = list()
+  counter=1
+  for(j in which(c(1,1,1,1,0,1,1)==1)){
+    mat_list_full[[counter]] = comb_mat[[j]]
+    counter = counter+1
   }
-  #browser()
-  return(matList_full)
+  return(mat_list_full)
 }
 
-read.csv(paste(data_source,"sim_final_n195_combined_bic.csv",sep=""))$bic-
-  read.csv(paste(data_source,"sim_final_n195_bic.csv",sep=""))$bic
+fit_param(n, p, matList_final, sim_final, id_min=id_min,
+          filename_param_fit=paste(data_source,"sim_final_n195_combined_param_fit.csv",sep=""),
+          filename_ests = paste(data_source,"sim_final_n195_combined_ests.csv",sep=""),
+          filename_bic = paste(data_source,"sim_final_n195_combined_bic.csv",sep=""),
+          link=combined_matList_partial, compute_WSCE=TRUE)
+read.csv(paste(data_source,"sim_final_n195_combined_param_fit.csv",sep=""))
+
+fit_param(n, p, matList_final, sim_final, id_min=id_min,
+          filename_param_fit=paste(data_source,"sim_final_n195_combined_param_fit.csv",sep=""),
+          filename_ests = paste(data_source,"sim_final_n195_combined_ests.csv",sep=""),
+          filename_bic = paste(data_source,"sim_final_n195_combined_bic.csv",sep=""),
+          link=combined_matList_partial)
+parm=read.csv(paste(data_source,"sim_final_n195_combined_param_fit.csv",sep=""))
+
+covMatstuff = CovMat_03(parm=as.numeric(c(as.matrix(parm))[-1]) ,matList=matList_final,id_min=id_min,link=combined_matList)
+ml_combined = covMatstuff$matList_combined
+alpha_beta = covMatstuff$alpha_beta
+
+sapply(seq_along(alpha_beta), function(i) alpha_beta[i]*sum(ml_combined_supp[[i]]*ml_combined[[i]])/sum(ml_combined_supp[[i]]))
+
+parm=read.csv(paste(data_source,"sim_final_n195_param_fit.csv",sep=""))
+
+covMatstuff = CovMat_03(parm=c(as.numeric(c(as.matrix(parm))[-1])[-5],0,0,0,as.numeric(c(as.matrix(parm))[-1])[5]) ,matList=matList_final,id_min=id_min,link=combined_matList)
+ml_combined = covMatstuff$matList_combined
+alpha_beta = covMatstuff$alpha_beta
+
+sapply(seq_along(alpha_beta), function(i) alpha_beta[i]*sum(ml_combined_supp[[i]]*ml_combined[[i]])/sum(ml_combined_supp[[i]]))
+

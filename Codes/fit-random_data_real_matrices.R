@@ -250,138 +250,104 @@ df$type = apply(as.matrix(df$variable),1,function(s) strsplit(s," ")[[1]][1])
 df$variable=NULL
 write.csv(df,file=paste(data_source,"sim_02_different_n.csv",sep=""))
 
+### model misspecification ###
 
-### TODO ###
+matList3 = read_matList(filename = paste(data_source,"sim_01_matList.csv",sep=""))
 
-# ## Initializing and plotting the real data ##
-# source("functions/get_data_covar.R")
-# 
-# read_plot = read_plot_FITcomps_std(filename="../Data/TFR_pieces_202311/standardized_residuals_202311/FITcomps_std_residuals_sample%i_202311.txt") # Initializing and plotting the real data 
-# FITcomps_std_total = read_plot$FITcomps_std_total
-# FITcomps_std = read_plot$FITcomps_std
-# 
-# ## Path 1: Only use countries with no missing values
-# read_names = read_names_FITcomps_std_total(FITcomps_std_total, covar)
-# names_by_id = read_names$names_by_id
-# all_min = read_names$all_min
-# 
-# preproc_res = preproc_FITcomps_std(all_min, names_by_id, FITcomps_std, covar)
-# matList_final = preproc_res$matList_final
-# dim(matList_final$Fk[[1]])
-# id_min = preproc_res$id_min
-# 
-# print("cut-nodes")
-# print(names_by_id[127])
-# 
-# islands_id = diag(matList_final$Ml[[1]])==0
-# no_islands_id = diag(matList_final$Ml[[1]])!=0
-# names_by_id[islands_id ]
-# 
-# Y = FITcomps_std_total[2:12,which(all_min==1)]
-# Y = Y[,sapply(id_min,function(id) which(preproc_res$FITcomps_std_iso==preproc_res$iso_id_key[id]))]
-# corY = cor(Y)
-# 
-# n = dim(matList_final$Fk[[1]])[1]
-# p=11
-# 
-# # Parms
-# rho = .35
-# #alpha <- c(.11,.05,.09)#beta <- c(.01)#
-# 
-# matList2 = matList_final#sim_matList(n,rho=rho,num_F=2,k_vec=c(3,10),num_G=1,F_0=FALSE)
-# #write_matList(matList=matList2, filename=paste(data_source,"sim_02_matList_modelmisspec.csv",sep=""))
-# 
-# parm = c(.05,0.09,.11,.74,rho)
-# #write_param(t(parm),filename=paste(data_source,"sim_02_true_param_modelmisspec.csv",sep=""))
-# 
-# test = calc_tilde_G_inv(matList2$Ml[[1]],matList2$Al[[1]],rho)[id_min,id_min]
-# diag(test)=0
-# max(test)*.74#maximum neighbor effect around .26
-# G_inv = calc_tilde_G_inv(matList2$Ml[[1]],matList2$Al[[1]],rho)[id_min,id_min]
-# A = matList2$Al[[1]][id_min,id_min]
-# A[is.na(A)] = 0 # since islands can return NA-values
-# 
-# covMat <- CovMat_03(parm, matList2,id_min=id_min)
-# Sigma <- covMat$Sigma#cov2cor(covMat$Sigma)
+set.seed(seed)
+#matList4 = sim_matList(n,rho=rho,num_F=2,k_vec=c(3,10),num_G=1,F_0=FALSE)
 
-### TODO ###
+#(sim_01_true_param = read_param(filename=paste(data_source,"sim_01_true_param.csv",sep="")))
+(sim_01_true_param = c(.99,0,0,0,.982))#.982
 
+#(sim_01_true_param = c(.85,.10,0,.04,.982))
+#Sigma = CovMat_03(as.matrix(sim_01_true_param), matList4)$Sigma[1:195,1:195]
+Sigma_extra = CovMat_03(as.matrix(sim_01_true_param), matList3)$Sigma
+
+set.seed(seed)
+Y = FITcomps_std_total[2:12,which(all_min==1)]
+Y = Y[,sapply(id_min,function(id) which(preproc_res$FITcomps_std_iso==preproc_res$iso_id_key[id]))]
 # Compute performance over model misspecification
-#library(trialr)
-#rlkjcorr(1,n,eta=exp(-16))
+# library(trialr)
+# rlkjcorr(1,n,eta=exp(-16))
+extra_matrix = Sigma_extra[1:195,1:195]#cov2cor(rWishart(1,n,Sigma=Sigma2)[,,1])
+mean(abs(extra_matrix[extra_matrix!=1]))
+lambda_vec = (0:10)/10
+res_list=list()
+matList1=matList_final
+#matList1=matList4
+source("functions/cov_TFR_fit_funcs.R")
 
-# extra_matrix = corY#cov2cor(rWishart(1,n,Sigma=Sigma2)[,,1])
-# 
-# # normalize correlations
-# extra_matrix[extra_matrix!=1]=extra_matrix[extra_matrix!=1]*(mean(abs(Sigma[Sigma!=1]))/mean(abs(extra_matrix[extra_matrix!=1])))
-# mean(abs(extra_matrix[extra_matrix!=1]))
-# mean(abs(Sigma[Sigma!=1]))
-# eigen(extra_matrix)$values
-# 
-# lambda_vec = (0:10)/10
-# res_list=list()
-# matList1=matList2
-# source("functions/cov_TFR_fit_funcs.R")
-# p=11
-# res_list_list = list()
-# est_new = list()
-# est_new_res = list()
-# set.seed(seed)
-# #matList1$Fk[[4]] = matList1$Fk[[3]] 
-# for(N in 1:10){
-#   for(i in seq_along(lambda_vec)){
-#     
-#     Sigma_stretched = lambda_vec[i]*extra_matrix + (1-lambda_vec[i])*as.matrix(Sigma)
-#     sim_stretched = sim_cov(p, Sigma_stretched)
-#     # if(i==11){
-#     #   browser()
-#     # }
-#     #browser()
-#     #sim_stretched2 = sim_cov(p, Sigma_stretched)
-#     #matList1$Fk[[3]] = cov2cor(linearShrinkLWEst(sim_stretched2$Y))
-#     res_list[[i]] = c(fit_param(n, p, matList1, sim_stretched, 
-#                               id_min=id_min, save=FALSE,
-#                               filename_error_measures=TRUE,
-#                               Sigma=Sigma_stretched),list(sim_stretched))
-#     #browser()
-#     LWest = linearShrinkLWEst(sim_stretched$Y)#res_list[[i]][[3]][[2]]
-#     SigmaHatSCE = res_list[[i]][[3]][[length(res_list[[i]][[3]])]]
-#     cov_est = cov(sim_stretched$Y)
-#     testfunc = function(lamb) mean(abs(((1-lamb)*diag(n)+lamb*(cov_est))-LWest))
-#     lambda=which.min(sapply((1:10000)/10000,testfunc))/10000
-#     est_new[[i]] = (1-lambda)*res_list[[i]][[3]][[length(res_list[[i]][[3]])]]+lambda*res_list[[i]][[3]][[2]]
-#     est_new_res[[i]] = c(mean(abs(est_new[[i]]- Sigma_stretched)),sqrt(mean((est_new[[i]]- Sigma_stretched)^2)))
-#     res_list[[i]][[1]] = cbind(res_list[[i]][[1]],est_new_res[[i]])
-#     res_list[[i]][[3]][[length(res_list[[i]][[3]]) + 1]] = est_new[[i]]
-#     
-#   }
-#   res_list_list[[N]] = res_list
-# }
-# save(res_list_list,file="huge_data_24.Rdata")
-# 
-# data = t(sapply(1:length(res_list_list),
-#                 function(t) sapply(1:length(res_list_list[[1]]), 
-#                                    function(s) res_list_list[[t]][[s]][[1]][1,1])))
-# for(i in 1:2){
-#   for(j in 1:6){
-#     if(mean(c(i,j)==c(1,1))<1){
-#       data=cbind(data,t(sapply(1:length(res_list_list),
-#                                function(t) sapply(1:length(res_list_list[[1]]), 
-#                                                   function(s) res_list_list[[t]][[s]][[1]][i,j]))))
-#     }
-#   }
-# }
-# names_ests = c("Pearson","LW","Sparse","hatSigma0","hatSigma","new")
-# df=as.data.frame(data)
-# names(df)=c(paste("MAE",c(sapply(1:6,function(s) paste(lambda_vec,rep(names_ests[s],10))))),
-#             paste("RMSE",c(sapply(1:6,function(s) paste(lambda_vec,rep(names_ests[s],10))))))
-# library(reshape2)
-# df=melt(df)
-# df$est = apply(as.matrix(df$variable),1,function(s) strsplit(s," ")[[1]][3])
-# df$lambda = apply(as.matrix(df$variable),1,function(s) strsplit(s," ")[[1]][2])
-# df$type = apply(as.matrix(df$variable),1,function(s) strsplit(s," ")[[1]][1])
-# df$variable=NULL
-# write.csv(df,file=paste(data_source,"sim_02_modelmisspec06.csv",sep=""))
+res_list_list = list()
+
+est_new = list()
+est_new_res = list()
+N_samples = 10
+lambdas = matrix(ncol=length(lambda_vec),nrow=N_samples)
+
+for(N in 1:N_samples){
+  for(i in seq_along(lambda_vec)){
+    Sigma_stretched = lambda_vec[i]*extra_matrix + (1-lambda_vec[i])*as.matrix(Sigma)
+    sim_stretched = sim_cov(p, Sigma_stretched)
+    #sim_stretched$Y[is.na(Y)] = NA
+    #corY = matrix(ncol=n,nrow=n)
+    
+    #use pairwise correlation estimates
+    # for(k in (1:n)){
+    #   for(j in (k:n)){
+    #     #browser()
+    #     Yi_notmissing = !is.na(sim_stretched$Y[,k])
+    #     Yj_notmissing = !is.na(sim_stretched$Y[,j])
+    #     corY_ij = cor(sim_stretched$Y[Yi_notmissing&Yj_notmissing,k], sim_stretched$Y[Yi_notmissing&Yj_notmissing,j])
+    #     corY[k,j] = corY_ij
+    #     corY[j,k] = corY_ij
+    #   }
+    # }
+    #Y_nonmissing = imputePCA(sim_stretched$Y,ncp=length(sim_01_true_param))$completeObs
+    #sim_stretched$corY = cor(Y_nonmissing)#corY
+    res_list[[i]] = c(fit_param(n, p, matList1, sim_stretched, 
+                                id_min=id_min, save=FALSE,
+                                filename_error_measures=TRUE,
+                                Sigma=Sigma_stretched,compute_WSCE = TRUE),list(sim_stretched))
+    #browser()
+    #browser()
+    
+    est_new[[i]] = 0  # (1-lambda)*res_list[[i]][[3]][[length(res_list[[i]][[3]])]]+lambda*res_list[[i]][[3]][[2]]
+    est_new_res[[i]] = c(mean(abs(est_new[[i]]- Sigma_stretched)),sqrt(mean((est_new[[i]]- Sigma_stretched)^2)))
+    res_list[[i]][[1]] = cbind(res_list[[i]][[1]],est_new_res[[i]])
+    res_list[[i]][[3]][[length(res_list[[i]][[3]]) + 1]] = est_new[[i]]
+  }
+  res_list_list[[N]] = res_list
+}
+list_list = list(lambdas,res_list_list)
+#save(list_list,file="withBestWSCE_missing_values.Rdata")
+data = t(sapply(1:length(res_list_list),
+                function(t) sapply(1:length(res_list_list[[1]]), 
+                                   function(s) res_list_list[[t]][[s]][[1]][1,1])))
+for(i in 1:2){
+  for(j in 1:8){
+    if(mean(c(i,j)==c(1,1))<1){
+      data=cbind(data,t(sapply(1:length(res_list_list),
+                               function(t) sapply(1:length(res_list_list[[1]]), 
+                                                  function(s) res_list_list[[t]][[s]][[1]][i,j]))))
+    }
+  }
+}
+#names_ests = c("BestWSCE","hatSigma0","hatSigma")
+names_ests = c("Pearson","LW","Sparse","FM","BestWSCE","hatSigma0","hatSigma","new")
+df=as.data.frame(data)
+names(df)=c(paste("MAE",c(sapply(1:8,function(s) paste(lambda_vec,rep(names_ests[s],length(lambda_vec)))))),
+            paste("RMSE",c(sapply(1:8,function(s) paste(lambda_vec,rep(names_ests[s],length(lambda_vec)))))))
+library(reshape2)
+df=melt(df)
+df$est = apply(as.matrix(df$variable),1,function(s) strsplit(s," ")[[1]][3])
+df$lambda = apply(as.matrix(df$variable),1,function(s) strsplit(s," ")[[1]][2])
+df$type = apply(as.matrix(df$variable),1,function(s) strsplit(s," ")[[1]][1])
+df$variable=NULL
+write.csv(df,file=paste(data_source,"sim_02_modelmisspec_withWSCE.csv",sep=""))
+
+
+### model misspecification (missing errors) ###
 
 matList3 = read_matList(filename = paste(data_source,"sim_01_matList.csv",sep=""))
 
@@ -423,19 +389,6 @@ for(N in 1:N_samples){
     sim_stretched$Y[is.na(Y)] = NA
     #corY = matrix(ncol=n,nrow=n)
 
-    #use pairwise correlation estimates
-    # for(k in (1:n)){
-    #   for(j in (k:n)){
-    #     #browser()
-    #     Yi_notmissing = !is.na(sim_stretched$Y[,k])
-    #     Yj_notmissing = !is.na(sim_stretched$Y[,j])
-    #     corY_ij = cor(sim_stretched$Y[Yi_notmissing&Yj_notmissing,k], sim_stretched$Y[Yi_notmissing&Yj_notmissing,j])
-    #     corY[k,j] = corY_ij
-    #     corY[j,k] = corY_ij
-    #   }
-    # }
-    Y_nonmissing = imputePCA(sim_stretched$Y,ncp=length(sim_01_true_param))$completeObs
-    sim_stretched$corY = cor(Y_nonmissing)#corY
     res_list[[i]] = c(fit_param(n, p, matList1, sim_stretched, 
                                 id_min=id_min, save=FALSE,
                                 filename_error_measures=TRUE,
@@ -457,7 +410,7 @@ for(N in 1:N_samples){
   res_list_list[[N]] = res_list
 }
 list_list = list(lambdas,res_list_list)
-save(list_list,file="withBestWSCE_missing_values.Rdata")
+#save(list_list,file="withBestWSCE_missing_values.Rdata")
 data = t(sapply(1:length(res_list_list),
                 function(t) sapply(1:length(res_list_list[[1]]), 
                                    function(s) res_list_list[[t]][[s]][[1]][1,1])))
@@ -481,115 +434,5 @@ df$est = apply(as.matrix(df$variable),1,function(s) strsplit(s," ")[[1]][3])
 df$lambda = apply(as.matrix(df$variable),1,function(s) strsplit(s," ")[[1]][2])
 df$type = apply(as.matrix(df$variable),1,function(s) strsplit(s," ")[[1]][1])
 df$variable=NULL
-write.csv(df,file=paste(data_source,"sim_02_modelmisspec_withWSCE06_missing_values.csv",sep=""))
-write.csv(as.data.frame(lambdas),file=paste(data_source,"sim_02_modelmisspec_withWSCE06_missing_values_lambdas.csv",sep=""))
+write.csv(df,file=paste(data_source,"sim_02_modelmisspec_withWSCE_missing_values.csv",sep=""))
 
-### Same thing but with missing values 
-
-# set.seed(seed)
-# Y = FITcomps_std_total[2:12,which(all_min==1)]
-# Y = Y[,sapply(id_min,function(id) which(preproc_res$FITcomps_std_iso==preproc_res$iso_id_key[id]))]
-# 
-# extra_matrix = Sigma_extra[1:195,1:195]#cov2cor(rWishart(1,n,Sigma=Sigma2)[,,1])
-# mean(abs(extra_matrix[extra_matrix!=1]))
-# lambda_vec = (0:10)/10
-# res_list=list()
-# matList1=matList2
-# source("functions/cov_TFR_fit_funcs.R")
-# 
-# res_list_list = list()
-# est_new = list()
-# est_new_res = list()
-# lambdas = matrix(ncol=length(lambda_vec),nrow=10)
-# library(missMDA)
-# for(N in 1:10){
-#   for(i in seq_along(lambda_vec)){
-#     Sigma_stretched = lambda_vec[i]*extra_matrix + (1-lambda_vec[i])*as.matrix(Sigma)
-#     sim_stretched = sim_cov(p, Sigma_stretched)
-#     #browser()
-#     sim_stretched$Y[is.na(Y)] = NA
-#       
-#     corY = matrix(ncol=n,nrow=n)
-#     
-#     #use pairwise correlation estimates
-#     for(k in (1:n)){
-#       for(j in (k:n)){
-#         #browser()
-#         Yi_notmissing = !is.na(sim_stretched$Y[,k])
-#         Yj_notmissing = !is.na(sim_stretched$Y[,j])
-#         corY_ij = cor(sim_stretched$Y[Yi_notmissing&Yj_notmissing,k], sim_stretched$Y[Yi_notmissing&Yj_notmissing,j])
-#         corY[k,j] = corY_ij
-#         corY[j,k] = corY_ij
-#       }
-#     }
-#     sim_stretched$corY = corY
-#       
-#     #browser()
-#     res_list[[i]] = c(fit_param(n, p, matList1, sim_stretched, 
-#                                 id_min=id_min, save=FALSE,
-#                                 filename_error_measures=TRUE,
-#                                 has_missingvalues=TRUE,
-#                                 Sigma=Sigma_stretched),list(sim_stretched))
-#     #browser()
-#     
-#     imputed = imputePCA(sim_stretched$Y,ncp=4)$completeObs
-#     LWest = linearShrinkLWEst(imputed)#res_list[[i]][[3]][[2]]
-#     SigmaHatSCE = res_list[[i]][[3]][[length(res_list[[i]][[3]])]]
-#     cov_est = cov(imputed)
-#     testfunc = function(lamb) mean(abs(((1-lamb)*diag(n)+lamb*(cov_est))-LWest))
-#     lambda=which.min(sapply((1:10000)/10000,testfunc))/10000
-#     
-#     est_new[[i]] = (1-lambda)*SigmaHatSCE+lambda*cov2cor(LWest)
-#     est_new_res[[i]] = c(mean(abs(est_new[[i]]- Sigma_stretched)),sqrt(mean((est_new[[i]]- Sigma_stretched)^2)))
-#     res_list[[i]][[1]] = cbind(res_list[[i]][[1]],est_new_res[[i]])
-#     res_list[[i]][[3]][[length(res_list[[i]][[3]]) + 1]] = est_new[[i]]
-#     lambdas[N,i] = lambda
-#     #print(lambda)
-#     #browser()
-#     
-#     cor_est = cor(imputed)
-#     
-#     pi=mean(sapply(1:p,function(s) sum((t(t(imputed[s,]))%*%t(imputed[s,])-cor_est)^2)))
-#     rho=mean(sapply(1:p,function(s) -cor_est*SigmaHatSCE))
-#     
-#     psi_matrix = 0
-#     diag(psi_matrix) =0;#TODO
-#     psi = sum((SigmaHatSCE-cor_est)^2)
-#     diag(psi)
-#     LWvec = c((pi-rho)/psi,1-(pi-rho)/psi)
-#     print(LWvec/sum(LWvec))
-#   }
-#   res_list_list[[N]] = res_list
-# }
-# list_list = list(lambdas,res_list_list)
-# save(list_list,file="huge_data_08withWSCEmissingvalues.Rdata")
-# data = t(sapply(1:length(res_list_list),
-#                 function(t) sapply(1:length(res_list_list[[1]]), 
-#                                    function(s) res_list_list[[t]][[s]][[1]][1,1])))
-# for(i in 1:2){
-#   for(j in 1:4){
-#     if(mean(c(i,j)==c(1,1))<1){
-#       data=cbind(data,t(sapply(1:length(res_list_list),
-#                                function(t) sapply(1:length(res_list_list[[1]]), 
-#                                                   function(s) res_list_list[[t]][[s]][[1]][i,j]))))
-#     }
-#   }
-# }
-# names_ests = c("hatSigma","Imputed","hatSigma0","new")
-# df=as.data.frame(data)
-# names(df)=c(paste("MAE",c(sapply(1:4,function(s) paste(lambda_vec,rep(names_ests[s],10))))),
-#             paste("RMSE",c(sapply(1:4,function(s) paste(lambda_vec,rep(names_ests[s],10))))))
-# library(reshape2)
-# df=melt(df)
-# df$est = apply(as.matrix(df$variable),1,function(s) strsplit(s," ")[[1]][3])
-# df$lambda = apply(as.matrix(df$variable),1,function(s) strsplit(s," ")[[1]][2])
-# df$type = apply(as.matrix(df$variable),1,function(s) strsplit(s," ")[[1]][1])
-# df$variable=NULL
-# write.csv(df,file=paste(data_source,"sim_02_modelmisspec_withWSCE_withmissingvalue.csv",sep=""))
-# 
-# lambdas_df = as.data.frame(lambdas)
-# names(lambdas_df) = c("",lambda_vec)[-1]
-# lambdas_df = melt(lambdas_df)
-# 
-# write.csv(lambdas_df,file=paste(data_source,"sim_02_modelmisspec_withWSCE_withmissingvalue_lambdas.csv",sep=""))
-# 

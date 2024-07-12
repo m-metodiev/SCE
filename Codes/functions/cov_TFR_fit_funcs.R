@@ -99,7 +99,7 @@ fit_param = function(n, p, matList, sim, id_min,
                                   link=link,link_der_rho=link_der_rho,Y=sim$Y,
                                   pearson_mat=pearson_mat,SCE_mat=as.matrix(SigmaHat1),
                                   Y_nonmissing=Y_nonmissing, use_bootstrap=use_bootstrap)
-      #browser()
+      browser()
       print("lambda")
       print(lambda)
       ests = c(ests, list(lambda*as.matrix(SigmaHat1)+(1-lambda)*as.matrix(cor(Y_nonmissing))))
@@ -112,7 +112,9 @@ fit_param = function(n, p, matList, sim, id_min,
   #browser()
   
   if(save==TRUE){
-    #browser()
+    if(length(param_fit1)==7){
+      param_fit1=c(param_fit1[1:4],0,param_fit1[5:7])
+    }
     write_param(t(c(param_fit1)),filename=filename_param_fit,
                 matList = matList, link=link)
     write.csv(sapply(seq_along(ests),function(s) ests[[s]]),file=filename_ests)

@@ -16,7 +16,7 @@ forward_transform_param = function(param){
   #browser()
   
   # "Round down" if parameters are too close to the edge
-  param[1:(length(param)-1)][parm[1:(length(param)-1)]>=(1-1e-8)]=.99
+  param[1:(length(param)-1)][param[1:(length(param)-1)]>=(1-1e-8)]=.99
   param[1:(length(param)-1)][param[1:(length(param)-1)]<1e-8]=rep(0.001/(length(param)-1),sum(param[1:(length(param)-1)]<1e-8))
   if(sum(param[1:(length(param)-1)])>=(1-1e-8)){
     param[1:(length(param)-1)] = param[1:(length(param)-1)]/sum(param[1:(length(param)-1)])*(1-1e-8)

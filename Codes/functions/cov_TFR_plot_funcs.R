@@ -247,7 +247,7 @@ plot_data = function(matList, names_by_id, id_min, show_names=TRUE){
 }
 
 plot_sims = function(sims_errors_and_bic,filename, has_missingvalues=FALSE){
-  browser()
+  #browser()
   par(mfrow=c(2,1))
   # if(has_missingvalues){
   #   mat <- cbind(sims_errors_and_bic$mae1.2,
@@ -336,11 +336,11 @@ plot_heatmaps = function(matList,
   #browser()
   if(show_regions==TRUE){
     
-    browser()
+    #browser()
     #matList$Al[[1]][is.na(matList$Al[[1]])]=0
     #Sigma = ceiling(as.matrix(Sigma*matList$Al[[1]][id_min,id_min]))
     df = Sigma[unique(order_y),unique(order_y)][1:length(unique(order_y)),length(unique(order_y)):1]
-    browser()
+    #browser()
     df = df 
     
     df = as.data.frame(df)
@@ -351,7 +351,7 @@ plot_heatmaps = function(matList,
     rownames(df)=paste(dim(Sigma)[1]:1,(names_by_id[id_min])[unique(order_y)])#[length(unique(order_y)):1])
     colnames(df)=paste(1:dim(Sigma)[1],(names_by_id[id_min])[unique(order_y)])#[length(unique(order_y)):1])
     
-    browser()
+    #browser()
     #comcol_mat = cbind(1-(diag(matList$Ml[[1]])>min(diag(matList$Ml[[1]]))),diag(matList$Ml[[1]])>min(diag(matList$Ml[[1]])))
     #comcol_mat = comcol_mat %*% t(comcol_mat)
     #comcol_mat = comcol_mat[id_min,id_min][unique(order_y),unique(order_y)]
@@ -402,7 +402,7 @@ plot_heatmaps = function(matList,
     
     ### TEST ###
     
-    browser()
+    #browser()
     
     id_nocol = as.numeric(comcol_res_vec[sapply(names(df), function(s) grepl("France",s))])
     id_fra = as.numeric(comcol_res_vec[sapply(names(df), function(s) grepl("Senegal",s))])
@@ -462,7 +462,7 @@ plot_heatmaps = function(matList,
     continent_names_old = continent_names
     cluster_names = c("",cl1)[-1]
     
-    browser()
+    #browser()
     
     cluster_res_vec = cluster_names[unique(order_y)]
     continent_res_vec = continent_names[unique(order_y)]
@@ -492,7 +492,7 @@ plot_heatmaps = function(matList,
     
     # add zeroes to keep the order
     df_col = colnames(df)#[h_order]
-    browser()
+    #browser()
     df_col[as.numeric(sapply(df_col,function(s) str_split(s,pattern=" ")[[1]][1]))<10] = 
       paste("00",df_col[as.numeric(sapply(df_col,function(s) str_split(s,pattern=" ")[[1]][1]))<10],sep="")
     df_col[(as.numeric(sapply(df_col,function(s) str_split(s,pattern=" ")[[1]][1]))>=10) & 
@@ -508,7 +508,7 @@ plot_heatmaps = function(matList,
     
     
     
-    browser()
+    #browser()
     
     ### TEST ###
     h_order = hclust(as.dist(1-Sigma_cluster))$order
@@ -537,7 +537,7 @@ plot_heatmaps = function(matList,
     # rownames(row_metaData) <- rownames(df)
     # rownames(col_metaData) <- colnames(df)
     
-    browser()
+    #browser()
     row_metaData = row_metaData[sort(sapply(rownames(row_metaData), function(s) str_split(s," ")[[1]][2]),index.return=TRUE)$ix,][order(sort(sapply(rownames(df), function(s) str_split(s," ")[[1]][2]),index.return=TRUE)$ix),]
     #row_metaData = row_metaData[195:1,]
     
@@ -552,7 +552,7 @@ plot_heatmaps = function(matList,
     Sigma_countries$country_name[Sigma_countries$reg_name=="Western Europe"]
     
     ### TEST ###
-    browser()
+    #browser()
 
     col_metaData$regions = col_metaData$regions[195:1]
     row_metaData$clusters=NULL
@@ -611,7 +611,7 @@ plot_heatmaps = function(matList,
     plot2=grid.arrange(legend2[[1]][[1]],legend3[[1]][[1]],legend1[[1]][[1]])
     ggsave("atelier/sim_final_n195_full_data_covmat_legend.jpeg",plot2, device="jpeg", width=4, height=9.5)
 
-    browser()
+    #browser()
     print(median(df[df<0]))
     
     return(list(main_range=range(df),main_color=main_color))

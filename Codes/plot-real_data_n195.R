@@ -13,7 +13,19 @@ library(viridis)
 data_source = "data/"
 ESTS_NAMES = c("Pearson","LW","Sparse","hatSigma0","hatSigma")
 
-### True data 2: n=195 ###
+df=read.csv(file=paste(data_source,"sim_final_n195_model_choice.csv",sep=""))
+rownames(df)=df$X
+df$X=NULL
+library(viridis)
+ggheatmap(df) +
+  scale_fill_viridis() +
+  guides(fill=guide_colorbar("Value")) +
+  scale_x_discrete( labels = expression("comcol","sameRegion","intercept","contig","comcol & sameRegion","comcol & contig", "sameRegion & contig"))+
+  scale_y_discrete(limits = rownames(df)) +
+  annotate('rect', xmin = 0.5, xmax = 7.5, ymin = 0.5, ymax = 1.5,
+           fill = NA, color = 'magenta', size = 1) +
+  theme(axis.text.x=element_text(size=15), axis.text.y=element_text(size=16))
+ggsave("atelier/real_data_n195_modelchoice.pdf", width=16,height=10)
 
 ## read data ##
 
@@ -34,42 +46,6 @@ id_min = preproc_res$id_min
 
 ## End read data ##
 
-# #Comparing to Adrian's results:
-# plot_param(matList_final, filename_true_param="sim_02_true_param.csv",
-#            filename_param_fit="sim_final_n195_param_fit.csv", id_min=id_min,
-#            error=FALSE)
-# plot_param(matList_final, filename_true_param="sim_02_true_param.csv",
-#            filename_param_fit="sim_final_n195_combined_param_fit.csv", id_min=id_min,
-#            error=FALSE)
-# 
-# plot_param(matList_final, filename_true_param=NULL,
-#            filename_param_fit="sim_final_n195_param_fit.csv", id_min=id_min)
-# 
-# plot_param(matList_final, filename_true_param=NULL,
-#            filename_param_fit="sim_final_n74_combined_param_fit.csv", id_min=id_min)
-
-#Comparing to Adrian's results:
-# plot_param(matList_final, filename_true_param=paste(data_source,"sim_02_true_param.csv",sep=""),
-#            filename_param_fit=paste(data_source,"sim_final_n195_param_fit.csv",sep=""), 
-#            id_min=id_min,
-#            error=FALSE)
-# plot_param(matList_final, filename_true_param=paste(data_source,"sim_02_true_param.csv",sep=""),
-#            filename_param_fit=paste(data_source,"sim_final_n195_combined_param_fit.csv",sep=""),
-#            id_min=id_min,
-#            error=FALSE)
-# plot_param(matList_final, filename_true_param=paste(data_source,"sim_02_true_param.csv",sep=""),
-#            filename_param_fit=paste(data_source,"sim_final_n195_param_fit.csv",sep=""), 
-#            id_min=id_min,
-#            error=FALSE,version="scatterplot")
-# plot_param(matList_final, filename_true_param=paste(data_source,"sim_02_true_param.csv",sep=""),
-#            filename_param_fit=paste(data_source,"sim_final_n195_combined_param_fit.csv",sep=""), 
-#            id_min=id_min,
-#            error=FALSE,version="scatterplot")
-
-
-## Compare results
-Sigma_FosdickRaftery = as.matrix(CovMat_03(parm=c(.05,.09,.11,.26),matList = matList_final,
-                                           id_min=id_min,combined_effects = "FosdickRaftery")$Sigma)
 Sigma_base_model = as.matrix(CovMat_03(parm=as.matrix(read_param(filename=paste(data_source,"sim_final_n195_param_fit.csv",sep=""))),
                                        matList=matList_final,
                                        id_min=id_min)$Sigma)
@@ -119,60 +95,24 @@ info_coutries <- countries_num %>%
   left_join(colon_full, by =c("ISO3 Alpha-code" = "iso3"))  %>% 
   unique()
 
-#Y = FITcomps_std_total[2:12,which(all_min==1)]
-# Y = Y[,sapply(id_min,function(id) which(preproc_res$FITcomps_std_iso==preproc_res$iso_id_key[id]))]
-# n=dim(Y)[2]
-# imputed = imputePCA(Y,ncp=4)$completeObs
-# LWest = linearShrinkLWEst(imputed)#res_list[[i]][[3]][[2]]
 SigmaHatSCE = Sigma_interation_model
-# cov_est = cov(imputed)
-# testfunc = function(lamb) mean(abs(((1-lamb)*diag(n)+lamb*(cov_est))-LWest))
-# lambda=which.min(sapply((1:10000)/10000,testfunc))/10000
 
 ests = read_ests(filename=paste(data_source,"sim_final_n195_combined_ests.csv",sep=""))
 
-main_list = plot_heatmaps(matList_final, 
-              Sigma=ests[[7]],
-              filename="atelier/sim_final_n195_full_data_covmatWSCE.jpeg",
-              show_regions=TRUE, Sigma_true=SigmaHatSCE,
-              names_by_id=names_by_id, id_min=id_min,
-              iso3=iso3, info_coutries=info_coutries)
-
-# cl3 = plot_heatmaps(matList_final, 
-#                     Sigma=ests[[1]],
-#                     filename="atelier/sim_final_n195_full_data_covmatPEARSON.jpeg",
-#                     show_regions=TRUE, Sigma_true=SigmaHatSCE,
-#                     names_by_id=names_by_id, id_min=id_min,
-#                     iso3=iso3, info_coutries=info_coutries)
 
 plot_heatmaps(matList_final, 
               Sigma=Sigma_base_model,
               filename="atelier/sim_final_n195_full_data_covmatbasemodel.jpeg",
-              show_regions=TRUE, Sigma_true=SigmaHatSCE,
+              show_regions=TRUE, Sigma_true=SigmaHatSCE,Sigma_cluster=Sigma_base_model,
               names_by_id=names_by_id, id_min=id_min,
               iso3=iso3, info_coutries=info_coutries)
 
 matList_final$Al[[1]][is.na(matList_final$Al[[1]])]=0
 
 
-cl2 = plot_heatmaps(matList_final, 
-              Sigma=SigmaHatSCE,
-              filename="atelier/sim_final_n195_full_data_covmat.jpeg",
-              show_regions=TRUE, Sigma_cluster=ests[[7]],
-              names_by_id=names_by_id, id_min=id_min,
-              iso3=iso3, info_coutries=info_coutries,
-              main_range = main_list$main_range, main_color = main_list$main_color)
-
-#TODO: remove this
-cl2 = plot_heatmaps(matList_final, 
+plot_heatmaps(matList_final, 
                     Sigma=SigmaHatSCE,
                     filename="atelier/sim_final_n195_full_data_covmat.jpeg",
-                    show_regions=TRUE, Sigma_true = Sigma_base_model,
+                    show_regions=TRUE,
                     names_by_id=names_by_id, id_min=id_min,
                     iso3=iso3, info_coutries=info_coutries)
-
-adjustedRandIndex(cl1,cl2)
-adjustedRandIndex(cl1,cl3)
-
-### End True data 2 ###
-

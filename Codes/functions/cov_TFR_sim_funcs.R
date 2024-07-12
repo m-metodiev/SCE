@@ -88,11 +88,11 @@ sim_errors_and_bic = function(sim_func, fit1_func, fit2_func, num_sim){
     # if(i==64){
     #   browser()
     # }
-    #browser()
+    browser()
     print(i)
     sim = sim_func(seed=i)
     res1 = fit1_func(sim)
-    #browser()
+    browser()
     res2 = fit2_func(sim)
     #browser()
     res[[i]] = c(res1[[1]][1,], res1[[1]][2,], res1[[2]], res1[[4]],

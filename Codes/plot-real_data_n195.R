@@ -1,6 +1,4 @@
 rm(list=ls())
-
-#source('FunctionsCovTFR.R')
 source("functions/FunctionsCovTFR_02.R")
 source("functions/funcs_frob_norm_opt.R")
 source("functions/cov_TFR_sim_funcs.R")
@@ -52,9 +50,6 @@ Sigma_base_model = as.matrix(CovMat_03(parm=as.matrix(read_param(filename=paste(
 Sigma_interation_model = as.matrix(CovMat_03(parm=as.matrix(read_param(filename=paste(data_source,"sim_final_n195_combined_param_fit.csv",sep=""))),
                                              matList=matList_final,
                                              id_min=id_min, link=combined_matList)$Sigma)
-# plot_heatmaps(matList_final, Sigma=Sigma_FosdickRaftery, 
-#               Sigma2=Sigma_base_model, Sigma3=Sigma_interation_model, 
-#               filename=paste(data_source,"sim_final_n195_all_matrices_plot.jpeg",sep=""))
 
 library(cepiigeodist)
 

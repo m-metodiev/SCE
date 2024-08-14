@@ -64,33 +64,18 @@ plot_cov(matList2,Sigma,
          SigmaHat_list=read_ests(filename=paste(data_source,"sim_03_ests.csv",sep="")),
          colvec=c("brown","grey","pink","pink3","beige","orange2","darkorange2"),
          model="corY", ests_names=ESTS_NAMES,order=c(1, 2, 3, 4, 7, 5, 6))
-ggsave("atelier/sim_03_ests.jpeg", width=5.3,height=4.07,device="jpeg")
+ggsave("atelier/sim_03_ests.jpeg", width=5.3,height=4.07,device="jpeg",,dpi=700)
 
 
 ### Simulation 3 ###
 
 matList3 = read_matList(filename = paste(data_source,"sim_02_matList.csv",sep=""))
 (sim_03_true_param = read_param(filename=paste(data_source,"sim_02_true_param.csv",sep="")))
-# plot_param(matList3, filename_true_param=paste(data_source,"sim_02_true_param.csv",sep=""),
-#            filename_param_fit=paste(data_source,"sim_03_param_fit.csv",sep=""), id_min=id_min)
 
 Sigma = CovMat_03(as.matrix(sim_03_true_param), matList2, id_min=id_min)$Sigma
 ests = read_ests(filename=paste(data_source,"sim_03_ests.csv",sep=""))
 
 sims_errors_and_bic = read.csv(file=paste(data_source,"sim_03_sims_errors_and_bic.csv",sep=""))
-
-# fix "names" error
-names(sims_errors_and_bic)=c("X", "mae1.1", "mae1.2", "mae1.3", "mae1.4", 
-                             "mae1.5", "mae1.6", "mae1.7", 
-                             "rmse1.1",  "rmse1.2",  "rmse1.3",  "rmse1.4",  
-                             "rmse1.5", "rmse1.6", "rmse1.7", "bic1", 
-                             "param1.1", "param1.2", "param1.3", "param1.4", 
-                             "param1.5", "mae2.1", "mae2.2", "mae2.3", "mae2.4",
-                             "mae2.5", "mae2.6", "rmse2.1", "rmse2.2",
-                             "rmse2.3",  "rmse2.4",  "rmse2.5", "rmse2.6",
-                             "bic2","param2.1", "param2.2", "param2.3",
-                             "param2.4", "param2.5", "param2.6",
-                             "param2.7", "param2.8")
 
 param_pos = sapply(names(sims_errors_and_bic), function(s) grepl("param",s))
 sims_params = sims_errors_and_bic[,param_pos]
@@ -105,7 +90,6 @@ ggplot(melt(sims_params1),aes(x=variable,y=value)) + geom_boxplot() +
   geom_abline(slope=0, intercept=as.numeric(sim_03_true_param[3])) +
   geom_abline(slope=0, intercept=as.numeric(sim_03_true_param[4])) +
   geom_abline(slope=0, intercept=as.numeric(sim_03_true_param[5])) 
-ggsave("atelier/sim_03_param_error_measures.pdf", width=5.3,height=4.07)
 
 sims_errors_and_bic = sims_errors_and_bic[,!param_pos]
 plot_sims(sims_errors_and_bic=sims_errors_and_bic, filename="atelier/sim_03_error_measures.pdf")

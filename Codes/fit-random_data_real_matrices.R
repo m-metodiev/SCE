@@ -11,25 +11,28 @@ data_source = "data/"
 
 #### Simulation 2: Matrices from the real data ####
 
-#### TODO ####
-
-#Create new mean
-# seed <- 3; set.seed(seed)
-# set.seed(seed)
-# n <- 195; p <- 1; rho = .982
-# matList0 = sim_matList(n,rho=rho,num_F=2,k_vec=c(3,10),num_G=1,F_0=FALSE)
-# matList0$Fk[[length(matList0$Fk)+1]] = matrix(1,nrow=n,ncol=n)
-# parm = c(.05,0.09,.11,.74,rho)
-# Sigma2 = CovMat_03(parm, matList0)$Sigma
-
-#### TODO ####
-
 seed=3
 set.seed(seed)
 
 source("functions/get_data_covar.R")
 
 read_plot = read_plot_FITcomps_std(filename="../Data/TFR_pieces_202311/standardized_residuals_202311/FITcomps_std_residuals_sample%i_202311.txt") # Initializing and plotting the real data 
+
+#results of print() output:
+# [1] "1958 121"
+# [1] "1963 98"
+# [1] "1968 74"
+# [1] "1973 56"
+# [1] "1978 35"
+# [1] "1983 26"
+# [1] "1988 7"
+# [1] "1993 4"
+# [1] "1998 2"
+# [1] "2003 0"
+# [1] "2008 0"
+# [1] "percentage missing values:"
+# [1] 0.1961967
+
 FITcomps_std_total = read_plot$FITcomps_std_total
 FITcomps_std = read_plot$FITcomps_std
 
@@ -44,13 +47,9 @@ id_min = preproc_res$id_min
 
 # Parms
 n <- 195; p <- 11; rho = .35
-#alpha <- c(.11,.05,.09)#beta <- c(.01)#
 
-matList2 = matList_final#sim_matList(n,rho=rho,num_F=2,k_vec=c(3,10),num_G=1,F_0=FALSE)
+matList2 = matList_final
 write_matList(matList=matList2, filename=paste(data_source,"sim_02_matList.csv",sep=""))
-
-
-#matList2$Fk[[length(matList2$Fk)+1]] = matrix(1,nrow=n,ncol=n)
 
 parm = c(.05,0.09,.11,.74,rho)
 write_param(t(parm),matList=matList2,
@@ -111,20 +110,6 @@ fit2_func = function(sim) fit_param(n, p, matList2, sim, id_min=id_min,
 sims_errors_and_bic = sim_errors_and_bic(sim_func,fit1_func,fit2_func,num_sim)
 write.csv(sims_errors_and_bic,
           file=paste(data_source,"sim_02_sims_errors_and_bic_musigma_unknown.csv",sep=""))
-
-## Compute performance over repeated simulations
-# set.seed(seed)
-# num_sim=10
-# sim_func = function() sim_cov(p, Sigma)
-# fit1_func = function(sim) fit_param(n, p, matList2, sim, id_min=1:dim(matList2$Fk[[1]])[1],
-#                                     filename_error_measures=TRUE,save=FALSE)
-# fit2_func = function(sim) fit_param(n, p, matList2, sim, id_min=1:dim(matList2$Fk[[1]])[1],
-#                                     filename_error_measures = TRUE,
-#                                     combined_effects = TRUE, save=FALSE)
-# sims_errors_and_bic = sim_errors_and_bic(sim_func,fit1_func,fit2_func,num_sim)
-# write.csv(sims_errors_and_bic,
-#           file=paste(data_source,"sim_01_sims_errors_and_bic.csv",sep=""))
-
 
 ## Compute performance with varying n
 
@@ -200,82 +185,64 @@ matList1=matList2
 source("functions/cov_TFR_fit_funcs.R")
 
 res_list_list = list()
+lambdas = matrix(ncol=length(index_n),nrow=40)
 
 for(N in 1:40){
   for(i in seq_along(index_n)){
     
     Sigma_stretched = Sigma[index_n[[i]],index_n[[i]]]
-    sim2 = sim_cov(p, as.matrix(Sigma))
+    sim2 = sim_cov_with_seed(p, as.matrix(Sigma),seed=N)
     sim_stretched = sim2
     sim_stretched$Y = sim2$Y[,index_n[[i]]]
-    sim_stretched$corY = cor(sim_stretched$Y)
-    # if(i==11){
-    #   browser()
-    # }
+    sim_stretched$corY = cor_from_standard_errors(sim_stretched$Y)
+
     for(k in (1:3)){
       matList1$Fk[[k]] = matList2$Fk[[k]][index_n[[i]],index_n[[i]]]
     }
     res_list[[i]] = c(fit_param(length(index_n[[i]]), p, matList1, sim_stretched, 
                                 id_min=id_min[index_n[[i]]], save=FALSE,
                                 filename_error_measures=TRUE,
-                                Sigma=Sigma_stretched),list(sim_stretched))
-    #print(res_list[[i]])
+                                Sigma=Sigma_stretched, compute_WSCE = TRUE),list(sim_stretched))
+    #browser()
     
   }
   res_list_list[[N]] = res_list
 }
 
-data = t(sapply(1:length(res_list_list),
-                function(t) sapply(1:length(res_list_list[[1]]), 
-                                   function(s) res_list_list[[t]][[s]][[1]][1,1])))
-for(i in 1:2){
-  for(j in 1:6){
-    if(mean(c(i,j)==c(1,1))<1){
-      data=cbind(data,t(sapply(1:length(res_list_list),
-                               function(t) sapply(1:length(res_list_list[[1]]), 
-                                                  function(s) res_list_list[[t]][[s]][[1]][i,j]))))
-    }
-  }
+# Only save the error measures, lambda, and the parameters.
+read_data_varying_n = function(N){
+  t(sapply(seq_along(index_n), function(i) c(res_list_list[[N]][[i]][[1]][1,],
+                                             res_list_list[[N]][[i]][[4]],
+                                             res_list_list[[N]][[i]][[5]],
+                                             paste0(length(index_n[[i]])))))
 }
-names_ests = c("Pearson", "FM", "Glasso", "LW","IVE", "SCE", "WSCE")
-df=as.data.frame(data)
-n_vec = sapply(index_n, function (s) length(s))
-names(df)=c(paste("MAE",c(sapply(1:6,function(s) paste(n_vec,rep(names_ests[s],length(n_vec)))))),
-            paste("RMSE",c(sapply(1:6,function(s) paste(n_vec,rep(names_ests[s],length(n_vec)))))))
-library(reshape2)
-df=melt(df)
-df$est = apply(as.matrix(df$variable),1,function(s) strsplit(s," ")[[1]][3])
-df$lambda = apply(as.matrix(df$variable),1,function(s) strsplit(s," ")[[1]][2])
-df$type = apply(as.matrix(df$variable),1,function(s) strsplit(s," ")[[1]][1])
-df$variable=NULL
-write.csv(df,file=paste(data_source,"sim_02_different_n.csv",sep=""))
+
+data=cbind(read_data_varying_n(1),1)
+for(i in (2:N)){
+  data = rbind(data, cbind(read_data_varying_n(i),i))
+}
+write.csv(as.data.frame(data),file=paste(data_source,"sim_02_different_n.csv",sep=""))
 
 ### model misspecification ###
 
 matList3 = read_matList(filename = paste(data_source,"sim_01_matList.csv",sep=""))
 
 set.seed(seed)
-#matList4 = sim_matList(n,rho=rho,num_F=2,k_vec=c(3,10),num_G=1,F_0=FALSE)
 
-#(sim_01_true_param = read_param(filename=paste(data_source,"sim_01_true_param.csv",sep="")))
+# parameter for Bar(Sigma) (rho does not matter since spatial effect is 0)
 (sim_01_true_param = c(.99,0,0,0,.982))#.982
-
-#(sim_01_true_param = c(.85,.10,0,.04,.982))
-#Sigma = CovMat_03(as.matrix(sim_01_true_param), matList4)$Sigma[1:195,1:195]
 Sigma_extra = CovMat_03(as.matrix(sim_01_true_param), matList3)$Sigma
 
 set.seed(seed)
 Y = FITcomps_std_total[2:12,which(all_min==1)]
 Y = Y[,sapply(id_min,function(id) which(preproc_res$FITcomps_std_iso==preproc_res$iso_id_key[id]))]
+
 # Compute performance over model misspecification
-# library(trialr)
-# rlkjcorr(1,n,eta=exp(-16))
 extra_matrix = Sigma_extra[1:195,1:195]#cov2cor(rWishart(1,n,Sigma=Sigma2)[,,1])
 mean(abs(extra_matrix[extra_matrix!=1]))
 lambda_vec = (0:10)/10
 res_list=list()
 matList1=matList_final
-#matList1=matList4
 source("functions/cov_TFR_fit_funcs.R")
 
 res_list_list = list()
@@ -288,31 +255,15 @@ lambdas = matrix(ncol=length(lambda_vec),nrow=N_samples)
 for(N in 1:N_samples){
   for(i in seq_along(lambda_vec)){
     Sigma_stretched = lambda_vec[i]*extra_matrix + (1-lambda_vec[i])*as.matrix(Sigma)
-    sim_stretched = sim_cov(p, Sigma_stretched)
-    #sim_stretched$Y[is.na(Y)] = NA
-    #corY = matrix(ncol=n,nrow=n)
+    sim_stretched = sim_cov_with_seed(p, Sigma_stretched,seed=N)
     
-    #use pairwise correlation estimates
-    # for(k in (1:n)){
-    #   for(j in (k:n)){
-    #     #browser()
-    #     Yi_notmissing = !is.na(sim_stretched$Y[,k])
-    #     Yj_notmissing = !is.na(sim_stretched$Y[,j])
-    #     corY_ij = cor(sim_stretched$Y[Yi_notmissing&Yj_notmissing,k], sim_stretched$Y[Yi_notmissing&Yj_notmissing,j])
-    #     corY[k,j] = corY_ij
-    #     corY[j,k] = corY_ij
-    #   }
-    # }
-    #Y_nonmissing = imputePCA(sim_stretched$Y,ncp=length(sim_01_true_param))$completeObs
-    #sim_stretched$corY = cor(Y_nonmissing)#corY
     res_list[[i]] = c(fit_param(n, p, matList1, sim_stretched, 
                                 id_min=id_min, save=FALSE,
                                 filename_error_measures=TRUE,
                                 Sigma=Sigma_stretched,compute_WSCE = TRUE),list(sim_stretched))
-    #browser()
-    #browser()
+    lambdas[N,i]=res_list[[i]][[4]]
     
-    est_new[[i]] = 0  # (1-lambda)*res_list[[i]][[3]][[length(res_list[[i]][[3]])]]+lambda*res_list[[i]][[3]][[2]]
+    est_new[[i]] = 0
     est_new_res[[i]] = c(mean(abs(est_new[[i]]- Sigma_stretched)),sqrt(mean((est_new[[i]]- Sigma_stretched)^2)))
     res_list[[i]][[1]] = cbind(res_list[[i]][[1]],est_new_res[[i]])
     res_list[[i]][[3]][[length(res_list[[i]][[3]]) + 1]] = est_new[[i]]
@@ -320,7 +271,7 @@ for(N in 1:N_samples){
   res_list_list[[N]] = res_list
 }
 list_list = list(lambdas,res_list_list)
-#save(list_list,file="withBestWSCE_missing_values.Rdata")
+
 data = t(sapply(1:length(res_list_list),
                 function(t) sapply(1:length(res_list_list[[1]]), 
                                    function(s) res_list_list[[t]][[s]][[1]][1,1])))
@@ -333,7 +284,7 @@ for(i in 1:2){
     }
   }
 }
-#names_ests = c("BestWSCE","hatSigma0","hatSigma")
+
 names_ests = c("Pearson","LW","Sparse","FM","BestWSCE","hatSigma0","hatSigma","new")
 df=as.data.frame(data)
 names(df)=c(paste("MAE",c(sapply(1:8,function(s) paste(lambda_vec,rep(names_ests[s],length(lambda_vec)))))),
@@ -345,34 +296,26 @@ df$lambda = apply(as.matrix(df$variable),1,function(s) strsplit(s," ")[[1]][2])
 df$type = apply(as.matrix(df$variable),1,function(s) strsplit(s," ")[[1]][1])
 df$variable=NULL
 write.csv(df,file=paste(data_source,"sim_02_modelmisspec_withWSCE.csv",sep=""))
-
+write.csv(lambdas,file=paste(data_source,"sim_02_modelmisspec_withWSCE_lambdas.csv",sep=""))
 
 ### model misspecification (missing errors) ###
-
 matList3 = read_matList(filename = paste(data_source,"sim_01_matList.csv",sep=""))
 
 set.seed(seed)
-#matList4 = sim_matList(n,rho=rho,num_F=2,k_vec=c(3,10),num_G=1,F_0=FALSE)
-
-#(sim_01_true_param = read_param(filename=paste(data_source,"sim_01_true_param.csv",sep="")))
-(sim_01_true_param = c(.99,0,0,0,.982))#.982
-
-#(sim_01_true_param = c(.85,.10,0,.04,.982))
-#Sigma = CovMat_03(as.matrix(sim_01_true_param), matList4)$Sigma[1:195,1:195]
+(sim_01_true_param = c(.99,0,0,0,.982)) # same as above
 Sigma_extra = CovMat_03(as.matrix(sim_01_true_param), matList3)$Sigma
 
 set.seed(seed)
 Y = FITcomps_std_total[2:12,which(all_min==1)]
 Y = Y[,sapply(id_min,function(id) which(preproc_res$FITcomps_std_iso==preproc_res$iso_id_key[id]))]
+
 # Compute performance over model misspecification
-# library(trialr)
-# rlkjcorr(1,n,eta=exp(-16))
-extra_matrix = Sigma_extra[1:195,1:195]#cov2cor(rWishart(1,n,Sigma=Sigma2)[,,1])
+extra_matrix = Sigma_extra[1:195,1:195]
 mean(abs(extra_matrix[extra_matrix!=1]))
 lambda_vec = (0:10)/10
 res_list=list()
 matList1=matList_final
-#matList1=matList4
+
 source("functions/cov_TFR_fit_funcs.R")
 
 res_list_list = list()
@@ -385,32 +328,24 @@ lambdas = matrix(ncol=length(lambda_vec),nrow=N_samples)
 for(N in 1:N_samples){
   for(i in seq_along(lambda_vec)){
     Sigma_stretched = lambda_vec[i]*extra_matrix + (1-lambda_vec[i])*as.matrix(Sigma)
-    sim_stretched = sim_cov(p, Sigma_stretched)
+    sim_stretched = sim_cov_with_seed(p, Sigma_stretched,seed=N)
     sim_stretched$Y[is.na(Y)] = NA
-    #corY = matrix(ncol=n,nrow=n)
 
     res_list[[i]] = c(fit_param(n, p, matList1, sim_stretched, 
                                 id_min=id_min, save=FALSE,
                                 filename_error_measures=TRUE,
                                 Sigma=Sigma_stretched,compute_WSCE = TRUE),list(sim_stretched))
-    #browser()
-    SigmaHatWSCE = res_list[[i]][[3]][[length(res_list[[i]][[3]])-2]]
-    SigmaHatSCE = res_list[[i]][[3]][[length(res_list[[i]][[3]])]]
-    cov_est = cor(Y_nonmissing)
-    testfunc = function(lamb) mean(abs(((1-lamb)*SigmaHatSCE+lamb*cov_est)-SigmaHatWSCE))
-    lambda=1-which.min(sapply((1:10000)/10000,testfunc))/10000
-    #browser()
+    lambdas[N,i]=res_list[[i]][[4]]
     
-    est_new[[i]] = 0  # (1-lambda)*res_list[[i]][[3]][[length(res_list[[i]][[3]])]]+lambda*res_list[[i]][[3]][[2]]
+    est_new[[i]] = 0  
     est_new_res[[i]] = c(mean(abs(est_new[[i]]- Sigma_stretched)),sqrt(mean((est_new[[i]]- Sigma_stretched)^2)))
     res_list[[i]][[1]] = cbind(res_list[[i]][[1]],est_new_res[[i]])
     res_list[[i]][[3]][[length(res_list[[i]][[3]]) + 1]] = est_new[[i]]
-    lambdas[N,i] = lambda
   }
   res_list_list[[N]] = res_list
 }
 list_list = list(lambdas,res_list_list)
-#save(list_list,file="withBestWSCE_missing_values.Rdata")
+
 data = t(sapply(1:length(res_list_list),
                 function(t) sapply(1:length(res_list_list[[1]]), 
                                    function(s) res_list_list[[t]][[s]][[1]][1,1])))
@@ -423,7 +358,7 @@ for(i in 1:2){
     }
   }
 }
-#names_ests = c("BestWSCE","hatSigma0","hatSigma")
+
 names_ests = c("Pearson","LW","Sparse","FM","BestWSCE","hatSigma0","hatSigma","new")
 df=as.data.frame(data)
 names(df)=c(paste("MAE",c(sapply(1:8,function(s) paste(lambda_vec,rep(names_ests[s],length(lambda_vec)))))),
@@ -435,4 +370,4 @@ df$lambda = apply(as.matrix(df$variable),1,function(s) strsplit(s," ")[[1]][2])
 df$type = apply(as.matrix(df$variable),1,function(s) strsplit(s," ")[[1]][1])
 df$variable=NULL
 write.csv(df,file=paste(data_source,"sim_02_modelmisspec_withWSCE_missing_values.csv",sep=""))
-
+write.csv(lambdas,file=paste(data_source,"sim_02_modelmisspec_withWSCE_missing_values_lambdas.csv",sep=""))

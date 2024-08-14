@@ -52,6 +52,66 @@ p=11
 sim_final = list(corY=corY,Y=Y)
 
 source("functions/cov_TFR_fit_funcs.R")
+
+### START: check identifiability (this may take a long time) ###
+
+# grid-search for rho/=rho' 
+# (independence of the matrices is checked automatically)
+beta=1.5
+num_grid_sim=100
+xi = (1:(num_grid_sim+1))/(num_grid_sim+1)
+#tan-hyperbolic-spaced grid because rho approaches 1
+rho_vec = (1-tanh(beta*(1+xi))/tanh(beta))/(min((1-tanh(beta*(1+xi))/tanh(beta))))
+rho_vec = rho_vec[-length(rho_vec)]
+
+library(lpSolve)
+
+for(rho_1 in rho_vec){
+  for(rho_2 in rho_vec){
+    if(rho_1!=rho_2){
+      K = length(matList_final$Fk)
+      f.obj = c(rep(0,K),1,rep(0,K),1)
+      
+      
+      
+      G_matrix_1 = calc_tilde_G_inv(M=matList_final$Ml[[1]],A=matList_final$Al[[1]],
+                                    rho=rho_1)[id_min,id_min]
+      G_matrix_2 = calc_tilde_G_inv(M=matList_final$Ml[[1]],A=matList_final$Al[[1]],
+                                    rho=rho_2)[id_min,id_min]
+      
+      for(k in 1:K){
+        diag(matList_final$Fk[[k]])=1
+      }
+      
+      # matrix combination constraints
+      f.con = cbind(sapply(1:K,function(k) c(as.matrix(matList_final$Fk[[k]]))),
+                    c(as.matrix(G_matrix_1)),
+                    -sapply(1:K,function(k) c(as.matrix(matList_final$Fk[[k]]))),
+                    -c(as.matrix(G_matrix_2)))
+      f.rhs = rep(0,dim(f.con)[1])
+      
+      # simplex constraints
+      f.con = rbind(f.con, c(rep(1,K+1),rep(0,K+1)))
+      f.con = rbind(f.con, c(rep(0,K+1),rep(1,K+1)))
+      f.dir = rep("=", dim(f.con)[1])
+      f.rhs = c(f.rhs,1,1)
+      
+      # positivity constraints
+      f.con = rbind(f.con, diag(2*K+2))
+      f.dir = c(f.dir,rep(">=", 2*K+2))
+      f.rhs = c(f.rhs, rep(0,2*K+2))
+      
+      solution <- lp("max",f.obj,f.con,f.dir,f.rhs)
+      if(solution$objval!=0){
+        print("WARNING: NOT IDENTIFIABLE")
+        print(solution$solution)
+      }
+    }
+  }
+}
+
+### END: check identifiability ###
+
 fit_param(n, p, matList_final, sim_final, id_min=id_min,
           filename_param_fit=paste(data_source,"sim_final_n195_param_fit.csv",sep=""),
           filename_ests = paste(data_source,"sim_final_n195_ests.csv",sep=""),

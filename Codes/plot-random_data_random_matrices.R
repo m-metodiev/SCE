@@ -17,36 +17,14 @@ PARAM1_NAMES = c("comcol", "reg", "global", "contig.beta", "contig.rho")
 PARAM2_NAMES = c(PARAM1_NAMES, "comcol.and.reg", "comcol.and.config", 
                  "reg.and.config", "contig.rho")
 
-### Simulation 0 ###
-
-# res_matrix=as.matrix(read.csv(file=paste(data_source,"sim_00_sample_one.csv",sep="")))[,-1]
-# 
-# data=res_matrix
-# df=as.data.frame(t(data))
-# names(df)=c("10","50","100","200","500","1000")
-# library(reshape2)
-# df=melt(df)
-# df$n = apply(as.matrix(df$variable),1,function(s) strsplit(s," ")[[1]][1])
-# df$variable=NULL
-# df$n = factor(df$n,levels = c("10","50","100","200","500","1000"),ordered = TRUE)
-# df$MAE=df$value
-# df$value=NULL
-# 
 my_theme <- theme_bw() +
   theme(strip.background = element_rect(fill = "white"), text = element_text(face="bold", size=12),
   )
 theme_set(my_theme)
-# 
-# ggplot(df, aes(x=n, y=MAE)) + geom_boxplot() + theme(text=element_text(size=12))
-# ggsave("atelier/sim1_one_sample.pdf", width=5.3,height=4.07)
-
 ### Simulation 1 ###
 
 matList2 = read_matList(filename = paste(data_source,"sim_01_matList.csv",sep=""))
 (sim_01_true_param = read_param(filename=paste(data_source,"sim_01_true_param.csv",sep="")))
-# plot_param(matList2, filename_true_param=paste(data_source,"sim_01_true_param.csv",sep=""),
-#            filename_param_fit=paste(data_source,"sim_01_param_fit.csv",sep=""))
-# ggsave("atelier/sim_01_plotparam.pdf", width=5.3,height=4.07)
 
 Sigma = CovMat_03(as.matrix(sim_01_true_param), matList2)$Sigma
 
@@ -55,14 +33,14 @@ plot_cov(matList2,Sigma,
          SigmaHat_list=read_ests(filename=paste(data_source,"sim_01_ests.csv",sep="")),
          colvec=c("brown","grey","pink","pink3","beige","orange2","darkorange2"),
          model="corY", ests_names=ESTS_NAMES,order=c(1, 2, 3, 4, 7, 5, 6))
-ggsave("atelier/sim_01_ests.jpeg", width=5.3,height=4.07,device="jpeg")
+ggsave("atelier/sim_01_ests.jpeg", width=5.3,height=4.07,device="jpeg",dpi=700)
 
 # unknown means and variances
 plot_cov(matList2,Sigma,
          SigmaHat_list=read_ests(filename=paste(data_source,"sim_01_ests_musigma_unknown.csv",sep="")),
          colvec=c("brown","grey","pink","pink3","beige","orange2","darkorange2"),
          model="corY", ests_names=ESTS_NAMES,order=c(1, 2, 3, 4, 7, 5, 6))
-ggsave("atelier/sim_01_ests_musigmaunknown.jpeg", width=5.3,height=4.07,device="jpeg")
+ggsave("atelier/sim_01_ests_musigmaunknown.jpeg", width=5.3,height=4.07,device="jpeg",dpi=700)
 # heatmap of the correlation matrix
 plot_heatmaps(matList2, Sigma, 
               filename="atelier/sim_01_all_matrices_plot.jpeg")
@@ -84,7 +62,6 @@ ggplot(melt(sims_params1),aes(x=variable,y=value)) + geom_boxplot() +
   geom_abline(slope=0, intercept=as.numeric(sim_01_true_param[3])) +
   geom_abline(slope=0, intercept=as.numeric(sim_01_true_param[4])) +
   geom_abline(slope=0, intercept=as.numeric(sim_01_true_param[5])) 
-ggsave("atelier/sim_01_param_error_measures.pdf", width=5.3,height=4.07)
 
 sims_errors_and_bic = sims_errors_and_bic[,!param_pos]
 plot_sims(sims_errors_and_bic=sims_errors_and_bic, filename="atelier/sim_01_error_measures.pdf")
@@ -105,7 +82,6 @@ ggplot(melt(sims_params1),aes(x=variable,y=value)) + geom_boxplot() +
   geom_abline(slope=0, intercept=as.numeric(sim_01_true_param[3])) +
   geom_abline(slope=0, intercept=as.numeric(sim_01_true_param[4])) +
   geom_abline(slope=0, intercept=as.numeric(sim_01_true_param[5])) 
-ggsave("atelier/sim_01_param_error_measures_musigma_unknown.pdf", width=5.3,height=4.07)
 
 sims_errors_and_bic = sims_errors_and_bic[,!param_pos]
 plot_sims(sims_errors_and_bic=sims_errors_and_bic, filename="atelier/sim_01_error_measures_musigma_unknown.pdf")

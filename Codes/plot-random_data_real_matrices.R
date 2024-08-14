@@ -44,8 +44,6 @@ id_min = preproc_res$id_min
 
 matList2 = read_matList(filename = paste(data_source,"sim_02_matList.csv",sep=""))
 (sim_02_true_param = read_param(filename=paste(data_source,"sim_02_true_param.csv",sep="")))
-# plot_param(matList2, filename_true_param=paste(data_source,"sim_02_true_param.csv",sep=""),
-#            filename_param_fit=paste(data_source,"sim_02_param_fit.csv",sep=""), id_min=id_min)
 
 Sigma = CovMat_03(as.matrix(sim_02_true_param), matList2, id_min=id_min)$Sigma
 ests = read_ests(filename=paste(data_source,"sim_02_ests.csv",sep=""))
@@ -55,7 +53,7 @@ plot_cov(matList2,Sigma,
          SigmaHat_list=read_ests(filename=paste(data_source,"sim_02_ests.csv",sep="")),
          colvec=c("brown","grey","pink","pink3","beige","orange2","darkorange2"),
          model="corY", ests_names=ESTS_NAMES,order=c(1, 2, 3, 4, 7, 5, 6))
-ggsave("atelier/sim_02_ests.jpeg", width=5.3,height=4.07,device="jpeg")
+ggsave("atelier/sim_02_ests.jpeg", width=5.3,height=4.07,device="jpeg",dpi=700)
 
 # unknown means and variances
 plot_cov(matList2,Sigma,
@@ -112,7 +110,6 @@ plot_sims(sims_errors_and_bic=sims_errors_and_bic,filename="atelier/sim_02_error
 ### End Simulation 2 ###
 
 # varying n
-
 my_theme <- theme_bw() +
   theme(strip.background = element_rect(fill = "white"), text = element_text(face="bold", size=12),
         axis.ticks.x=element_blank()
@@ -120,15 +117,13 @@ my_theme <- theme_bw() +
 theme_set(my_theme)
 
 df=read.csv(file=paste(data_source,"sim_02_different_n.csv",sep=""),row.names=1)
+names(df)=c(ESTS_NAMES,"lambda",PARAM1_NAMES,"n","N")
+df$n=c("",df$n)[-1]
+df$n[df$n=="14"]="014"
+df$n[df$n=="32"]="032"
+df$n[df$n=="65"]="065"
+plot_MAE = ggplot(df, aes(x=n, y=WSCE)) + geom_boxplot()+scale_x_discrete(labels=c("14","32","65","115","195"))+ylab("MAE")+xlab("d")
 
-#df1 = df[(df$est=="hatSigma")&(df$type =="MAE"),]
-df$lambda=c(" ",(df$lambda))[-1]
-df$lambda[(df$lambda=="14")|(df$lambda=="32")|(df$lambda=="65")] = paste("0",df$lambda[(df$lambda=="14")|(df$lambda=="32")|(df$lambda=="65")],sep="")
-df$d = df$lambda
-df$MAE=df$value
-plot_MAE = ggplot(df[(df$est=="SCE")&(df$type=="MAE"),], aes(x=d, y=MAE)) + geom_boxplot()+scale_x_discrete(labels=c("14","32","65","115","195")) #scale_fill_hue( labels = expression("IVE","LW","WSCE","Pearson","Sparse","SCE"))
-
-#plot=arrangeGrob(plot_MAE,plot_RMSE)
 plot_MAE
 ggsave(plot_MAE,filename="atelier/sim_02_different_n.pdf", width=7,height=2,device="pdf")
 
@@ -174,6 +169,11 @@ plot_without_lines +
                     name="") + theme(legend.position = "bottom")
 ggsave("atelier/sim_02_model_misspec_partial.pdf", width=7,height=4,device="pdf")
 
+lambdas = read.csv(file=paste(data_source,"sim_02_modelmisspec_withWSCE_lambdas.csv",sep=""))
+lambdas$X=NULL
+df_lambdas  = melt(lambdas)
+ggplot(data=df_lambdas,aes(x=variable,y=value))+ggplot2::geom_boxplot()
+
 df_1 <- df
 # Version 2: Missing values
 my_theme <- theme_bw() +
@@ -215,17 +215,7 @@ plot_without_lines +
 ggsave("atelier/sim_02_model_misspec_partial_missing_values.pdf", width=7,height=4,device="pdf")
 
 
-### New graph with both missing and not missing 
-
-# df=read.csv(file=paste(data_source,"sim_02_modelmisspec_withWSCE06_missing_values.csv",sep=""),row.names=1) %>%
-#   mutate(est = case_when(
-#   est == "BestWSCE"~"hatSigma0",
-#   est == "hatSigma0"~"hatSigma",
-#   est == "hatSigma"~"BestWSCE",
-#   TRUE~est
-# ))
-#read.csv(file=paste(data_source,"sim_02_modelmisspec06.csv",sep=""),row.names=1)
-
+### plot with both missing and not missing 
 df_1$full ="Full"
 df$full ="Missing"
 df_full=rbind(df,df_1)
@@ -245,3 +235,8 @@ plot_without_lines <- df_full %>%
  }
  
 ggsave(plot_without_lines, file = "atelier/MAE_lambda.pdf", width = 7, height = 5)
+
+lambdas = read.csv(file=paste(data_source,"sim_02_modelmisspec_withWSCE_missing_values_lambdas.csv",sep=""))
+lambdas$X=NULL
+df_lambdas  = melt(lambdas)
+ggplot(data=df_lambdas,aes(x=variable,y=value))+ggplot2::geom_boxplot()

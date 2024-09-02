@@ -7,6 +7,8 @@ source("functions/cov_TFR_plot_funcs.R")
 source("functions/cov_TFR_data_funcs.R")
 library(corrplot)
 library(viridis)
+library(ggplot2)
+library(reshape2)
 
 data_source = "data/"
 ESTS_NAMES = c("Pearson","LW","Sparse","hatSigma0","hatSigma")

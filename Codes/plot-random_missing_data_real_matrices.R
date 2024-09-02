@@ -9,6 +9,8 @@ source("functions/cov_TFR_plot_funcs.R")
 source("functions/cov_TFR_data_funcs.R")
 library(corrplot)
 library(viridis)
+library(ggplot2)
+library(reshape2)
 
 data_source = "data/"
 ESTS_NAMES = c("Pearson", "FM", "Glasso", "LW","IVE", "SCE", "WSCE")#c("Pearson","LW","Sparse","FM","hatSigma0","hatSigma","WSCE")

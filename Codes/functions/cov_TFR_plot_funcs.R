@@ -200,7 +200,80 @@ plot_sims = function(sims_errors_and_bic,filename, has_missingvalues=FALSE){
   df1$MAE = df1$value
   df1$estimator=df1$variable
   plot1 =ggplot(df1,aes(x=estimator,y=MAE)) + geom_boxplot()
+  print(plot1)
   ggsave(plot1,filename=filename, width=5.3,height=4.07,device="pdf")
+}
+
+# show the different average effects, 
+# and compute covarage of confidence intervals
+plot_param_sims = function(name, sims_params1, p, Sigma, 
+                           matList, sim_01_true_param, id_min,
+                           return_plots=FALSE){
+  #browser()
+  asym_sds = t(apply(sims_params1, 1, 
+                     function(s_params1) sqrt(diag(solve(Fisher_information(1:nrow(Sigma),
+                                                                            sapply(s_params1,function(s) s),
+                                                                            matList,
+                                                                            link=function(matList) c(matList$Fk,matList$Gl),
+                                                                            link_der_rho=link_der_simple))/p))))
+  N <- nrow(asym_sds)
+  
+  # calculate how often the parameter is included in the 
+  # 95 percent confidence interval (via normal distribution quantiles)
+  coverage = sapply(1:N,
+                    function(s) (sims_params1[s,]+qnorm(0.975)*asym_sds[s,] >= sim_01_true_param) &
+                      (sims_params1[s,]-qnorm(0.975)*asym_sds[s,] <= sim_01_true_param))
+  
+  print("normal confidence intervals")
+  print(apply(coverage,1,mean))
+  #browser()
+  print(mean(c(coverage)))
+  
+  # calculate how often the parameter is included in the 
+  # 95 percent confidence interval (via Chebyshef inequality)
+  coverage = sapply(1:N,
+                    function(s) (sims_params1[s,]+sqrt(20)*asym_sds[s,] >= sim_01_true_param) &
+                      (sims_params1[s,]-sqrt(20)*asym_sds[s,] <= sim_01_true_param))
+  
+  print("Chebyshef confidence intervals")
+  print(apply(coverage,1,mean))
+  #browser()
+  print(mean(c(coverage)))
+  
+  # sqrt(diag(solve(Fisher_information(1:nrow(Sigma),sapply(sims_params1[1,],function(s) s),
+  #                                    matList,
+  #                                    link=function(matList) c(matList$Fk,matList$Gl),
+  #                                    link_der_rho=link_der_simple))/p))
+
+  avg_effect_true = avg_effect(sapply(sim_01_true_param,function(s)s), matList = matList2,
+                               id_min = id_min,link=function(matList) c(matList$Fk,matList$Gl))
+  avg_effects = apply(sims_params1, 1, 
+                      function(s_params1)   avg_effect(sapply(s_params1,function(s) s), matList = matList,
+                                                       id_min = id_min,link=function(matList) c(matList$Fk,matList$Gl)))
+  #browser()
+  
+  plot_comcol = ggplot(as.data.frame(t(avg_effects)),aes(y=comcol)) + 
+    geom_boxplot() + xlab("comcol") + ylab("") + 
+    geom_abline(intercept=avg_effect_true[1], slope=0,color="red") 
+  plot_sameRegion = ggplot(as.data.frame(t(avg_effects)),aes(y=reg)) + 
+    geom_boxplot() + xlab("sameRegion") + ylab("") +
+    geom_abline(intercept=avg_effect_true[2], slope=0,color="red")
+  plot_intercept = ggplot(as.data.frame(t(avg_effects)),aes(y=global)) + 
+    geom_boxplot() + xlab("intercept") + ylab("") +
+    geom_abline(intercept=avg_effect_true[3], slope=0,color="red")
+  plot_contig = ggplot(as.data.frame(t(avg_effects)),aes(y=contig.beta)) + 
+    geom_boxplot() + xlab("contig") + ylab("") +
+    geom_abline(intercept=avg_effect_true[4], slope=0,color="red")
+  
+  if(return_plots){
+    return(list(plot_comcol=plot_comcol,
+                plot_sameRegion=plot_sameRegion,
+                plot_intercept=plot_intercept,
+                plot_contig = plot_contig))
+  } else{
+    ggsave(name,grid.arrange(plot_comcol,plot_sameRegion,plot_intercept,plot_contig,ncol=4),
+           width=10.6,height=8.14)
+  }
 }
 
 plot_heatmaps = function(matList, 

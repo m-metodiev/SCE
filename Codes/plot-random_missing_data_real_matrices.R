@@ -92,6 +92,15 @@ ggplot(melt(sims_params1),aes(x=variable,y=value)) + geom_boxplot() +
   geom_abline(slope=0, intercept=as.numeric(sim_03_true_param[3])) +
   geom_abline(slope=0, intercept=as.numeric(sim_03_true_param[4])) +
   geom_abline(slope=0, intercept=as.numeric(sim_03_true_param[5])) 
+p=10
+plot_param_sims("atelier/sim_03_param_sims.pdf",
+                sims_params1,p,Sigma,matList2,sim_03_true_param,id_min)
+# [1] "normal confidence intervals"
+# [1] 0.925 0.825 0.875 0.850 0.875
+# [1] 0.87
+# [1] "Chebyshef confidence intervals"
+# [1] 0.975 0.975 1.000 0.975 1.000
+# [1] 0.985
 
 sims_errors_and_bic = sims_errors_and_bic[,!param_pos]
 plot_sims(sims_errors_and_bic=sims_errors_and_bic, filename="atelier/sim_03_error_measures.pdf")

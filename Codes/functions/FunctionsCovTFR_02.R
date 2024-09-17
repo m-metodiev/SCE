@@ -19,7 +19,7 @@ forward_transform_param = function(param){
   if(sum(param[1:(length(param)-1)])>=(1-1e-8)){
     param[1:(length(param)-1)] = param[1:(length(param)-1)]/sum(param[1:(length(param)-1)])*(1-1e-8)
   }
-  param[length(param)] = param[length(param)]*(param[length(param)]<1-1e-4)+1e-4*(param[length(param)]<1-1e-4)
+  param[length(param)] = param[length(param)]*(param[length(param)]<1-1e-4)+1e-4*(param[length(param)]>=1-1e-4)
   
   transformed_init = param
   transformed_init[1:(length(param)-1)] = inv_smax(c(1-sum(transformed_init[1:(length(param)-1)]),transformed_init[1:(length(param)-1)]))[-1]
@@ -61,6 +61,7 @@ calc_tilde_G_inv = function(M=NULL, A=NULL, rho,
   if(rho==1){
     rho=.999
   }
+  rho = rho*(rho<1-1e-4)+1e-4*(rho>=1-1e-4)
 
   # set diagonal to 1 for isolated nodes (A can't be defined for those)  
   no_islands_id = diag(M)!=0
@@ -93,7 +94,7 @@ calc_tilde_G_inv = function(M=NULL, A=NULL, rho,
     G_inv_no_islands = (diag(n) + U_full%*%D_rho_full%*%solve_U_full)%*%solve_M_no_islands
     
   }
-  
+
   G[no_islands_id,no_islands_id] = cov2cor(G_inv_no_islands)
   diag(G)=1 # islands are independent of all other nodes
   
@@ -193,6 +194,7 @@ LogLikParm_02 <- function(id_min, parm, matList, Y,
       }
     }
     S = S/p
+    #browser()
     res = -sum(log(eigen(Sigma)$values))-sum(diag(S%*%solve(Sigma)))
   }
   return(res)
@@ -207,7 +209,7 @@ LogLikLogParm_02 <- function(id_min, logParm, matList, Y,
   if(sum(parm[1:(length(parm)-1)])>=(1-1e-8)){
     parm[1:(length(parm)-1)] = parm[1:(length(parm)-1)]/sum(parm[1:(length(parm)-1)])*(1-1e-8)
   }
-  parm[length(parm)] = parm[length(parm)]*(parm[length(parm)]<1-1e-4)+1e-4*(parm[length(parm)]<1-1e-4)
+  parm[length(parm)] = parm[length(parm)]*(parm[length(parm)]<1-1e-4)+1e-4*(parm[length(parm)]>=1-1e-4)
   LogLikParm_02(id_min=id_min, parm, matList, Y, link=link)
 }
 
@@ -339,7 +341,7 @@ Fisher_information = function(id_min, parm, matList, link, link_der_rho){
       Fisher_mat[i,j] = (1/2)*sum(diag(Sigma_inv%*%Sigma_der[[i]]%*%Sigma_inv%*%Sigma_der[[j]]))
     }
   }
-  return(Fisher_mat) # TODO
+  return(Fisher_mat) 
 }
 
 cor_from_standard_errors = function(varepsilon){
@@ -374,6 +376,24 @@ compute_marginal_cor = function(Y){
     }
   }
   return(corY)
+}
+
+#Calculate average effect (=mean effect over matrix support)
+avg_effect = function(parm, matList, id_min, link){
+  
+  #Determine support of the matrices
+  matList_supp = matList
+  
+  #Set to 1 if countries are not neighbors
+  matList_supp$Al[[1]][is.na(matList_supp$Al[[1]])] = 0
+  matList_supp$Gl[[1]] = (matList_supp$Al[[1]][id_min,id_min] != 0) + 0
+  ml_combined_supp = link(matList_supp) 
+  
+  covMatstuff = CovMat_03(parm=parm ,matList=matList,id_min=id_min,link=link)
+  ml_combined = covMatstuff$matList_combined
+  alpha_beta = covMatstuff$alpha_beta
+  
+  sapply(seq_along(alpha_beta), function(i) alpha_beta[i]*sum(ml_combined_supp[[i]]*ml_combined[[i]])/sum(ml_combined_supp[[i]]))
 }
 
 compute_lambda_opt = function(id_min, parm, matList, link, link_der_rho, Y, pearson_mat, SCE_mat,
@@ -427,7 +447,7 @@ compute_lambda_opt = function(id_min, parm, matList, link, link_der_rho, Y, pear
       system(sprintf('echo "\n%s\n"', paste0(s, collapse="")))
       return(array( c(SCE_test , pearson_test ) , dim = c( n , n , 2 ) ))
     }
-    
+    #browser()
     pearson_mat=as.matrix(pearson_mat)
     num_bootstrap_iters = 100
     bootstrap_sample = mclapply(1:num_bootstrap_iters, FUN=function(s) test_func(s), mc.cores=5)
@@ -462,7 +482,7 @@ GradLogLikLogParm_02 <- function(id_min, logParm, matList, Y,
   # round down if parameter is on the edge
   parm[1:(length(parm)-1)][parm[1:(length(parm)-1)]>=(1-1e-8)]=.99
   parm[1:(length(parm)-1)][parm[1:(length(parm)-1)]<1e-8]=rep(0.001/(length(parm)-1),sum(parm[1:(length(parm)-1)]<1e-8))
-  parm[length(parm)] = parm[length(parm)]*(parm[length(parm)]<1-1e-4)+1e-4*(parm[length(parm)]<1-1e-4)
+  parm[length(parm)] = parm[length(parm)]*(parm[length(parm)]<1-1e-4)+1e-4*(parm[length(parm)]>=1-1e-4)
   
   jacobian = backward_transform_param_jacobian(logParm)
   

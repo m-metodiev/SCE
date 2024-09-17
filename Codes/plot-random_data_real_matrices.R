@@ -85,6 +85,16 @@ ggplot(melt(sims_params1),aes(x=variable,y=value)) + geom_boxplot() +
   geom_abline(slope=0, intercept=as.numeric(sim_02_true_param[4])) +
   geom_abline(slope=0, intercept=as.numeric(sim_02_true_param[5]))
 
+p <- 10
+plot_param_sims("atelier/sim_02_param_sims.pdf",
+                sims_params1,p,Sigma,matList2,sim_02_true_param,id_min)
+# [1] "normal confidence intervals"
+# [1] 0.950 0.875 0.900 0.950 0.950
+# [1] 0.925
+# [1] "Chebyshef confidence intervals"
+# [1] 1.000 0.950 1.000 1.000 0.975
+# [1] 0.985
+
 sims_errors_and_bic = sims_errors_and_bic[,!param_pos]
 plot_sims(sims_errors_and_bic=sims_errors_and_bic,filename="atelier/sim_02_error_measures.pdf")
 
@@ -105,6 +115,15 @@ ggplot(melt(sims_params1),aes(x=variable,y=value)) + geom_boxplot() +
   geom_abline(slope=0, intercept=as.numeric(sim_02_true_param[4])) +
   geom_abline(slope=0, intercept=as.numeric(sim_02_true_param[5]))
 
+plot_param_sims("atelier/sim_02_param_sims_mu_sigma_unknown.pdf",
+                sims_params1,p,Sigma,matList2,sim_02_true_param,id_min)
+# [1] "normal confidence intervals"
+# [1] 0.875 0.775 0.500 0.825 0.875
+# [1] 0.77
+# [1] "Chebyshef confidence intervals"
+# [1] 0.975 0.925 0.925 0.950 0.925
+# [1] 0.94
+
 sims_errors_and_bic = sims_errors_and_bic[,!param_pos]
 plot_sims(sims_errors_and_bic=sims_errors_and_bic,filename="atelier/sim_02_error_measures_musigma_unknown.pdf")
 
@@ -124,6 +143,31 @@ df$n=c("",df$n)[-1]
 df$n[df$n=="14"]="014"
 df$n[df$n=="32"]="032"
 df$n[df$n=="65"]="065"
+
+#plot params
+df_n14 = df[df$n=="014",which(names(df)=="comcol"):which(names(df)=="contig.rho")]
+plots_n14=plot_param_sims(" ",df_n14,p,Sigma,matList2,sim_02_true_param,id_min,return_plots = TRUE)
+
+df_n32 = df[df$n=="032",which(names(df)=="comcol"):which(names(df)=="contig.rho")]
+plots_n32=plot_param_sims(" ",df_n32,p,Sigma,matList2,sim_02_true_param,id_min,return_plots = TRUE)
+
+df_n65 = df[df$n=="065",which(names(df)=="comcol"):which(names(df)=="contig.rho")]
+plots_n65 = plot_param_sims(" ",df_n65,p,Sigma,matList2,sim_02_true_param,id_min,return_plots = TRUE)
+
+df_n115 = df[df$n=="115",which(names(df)=="comcol"):which(names(df)=="contig.rho")]
+plots_n115 = plot_param_sims(" ",df_n115,p,Sigma,matList2,sim_02_true_param,id_min,return_plots = TRUE)
+
+df_n195 = df[df$n=="195",which(names(df)=="comcol"):which(names(df)=="contig.rho")]
+plots_n195 = plot_param_sims(" ",df_n195,p,Sigma,matList2,sim_02_true_param,id_min,return_plots = TRUE)
+
+ggsave("atelier/sim_02_different_n_params.pdf",
+       grid.arrange(plots_n14$plot_comcol+xlab(" ")+ylim(c(0,0.31))+ylab("comcol"),plots_n32$plot_comcol+xlab(" ")+ylim(c(0,0.31)),plots_n65$plot_comcol+xlab(" ")+ylim(c(0,0.31)),plots_n115$plot_comcol+xlab(" ")+ylim(c(0,0.31)),plots_n195$plot_comcol+xlab(" ")+ylim(c(0,0.31)),
+                    plots_n14$plot_sameRegion+xlab(" ")+ylim(c(0,0.41))+ylab("sameRegion"),plots_n32$plot_sameRegion+xlab(" ")+ylim(c(0,0.41)),plots_n65$plot_sameRegion+xlab(" ")+ylim(c(0,0.41)),plots_n115$plot_sameRegion+xlab(" ")+ylim(c(0,0.41)),plots_n195$plot_sameRegion+xlab(" ")+ylim(c(0,0.41)),
+                    plots_n14$plot_intercept+xlab("n=14")+ylim(c(0,0.3))+ylab("intercept"),plots_n32$plot_intercept+xlab("n=32")+ylim(c(0,0.3)),plots_n65$plot_intercept+xlab("n=65")+ylim(c(0,0.3)),plots_n115$plot_intercept+xlab("n=115")+ylim(c(0,0.3)),plots_n195$plot_intercept+xlab("n=195")+ylim(c(0,0.3)),
+                    plots_n14$plot_contig+xlab(" ")+ylim(c(0,0.41))+ylab("contig"),plots_n32$plot_contig+xlab(" ")+ylim(c(0,0.41)),plots_n65$plot_contig+xlab(" ")+ylim(c(0,0.41)),plots_n115$plot_contig+xlab(" ")+ylim(c(0,0.41)),plots_n195$plot_contig+xlab(" ")+ylim(c(0,0.41)),ncol=5),
+       width=10.6,height=8.14)
+
+# plot WSCE
 plot_MAE = ggplot(df, aes(x=n, y=WSCE)) + geom_boxplot()+scale_x_discrete(labels=c("14","32","65","115","195"))+ylab("MAE")+xlab("d")
 
 plot_MAE
@@ -174,7 +218,9 @@ ggsave("atelier/sim_02_model_misspec_partial.pdf", width=7,height=4,device="pdf"
 lambdas = read.csv(file=paste(data_source,"sim_02_modelmisspec_withWSCE_lambdas.csv",sep=""))
 lambdas$X=NULL
 df_lambdas  = melt(lambdas)
-ggplot(data=df_lambdas,aes(x=variable,y=value))+ggplot2::geom_boxplot()
+ggsave("atelier/sim_02_model_misspec_lambdas.pdf",ggplot(data=df_lambdas,aes(x=variable,y=value))+geom_boxplot()+
+         xlab(expression(xi)) + ylab(expression(lambda)))
+mean(df_lambdas$value[df_lambdas$variable=="V1"]!=1)
 
 df_1 <- df
 # Version 2: Missing values
@@ -216,6 +262,12 @@ plot_without_lines +
                     name="") + theme(legend.position = "bottom")
 ggsave("atelier/sim_02_model_misspec_partial_missing_values.pdf", width=7,height=4,device="pdf")
 
+lambdas = read.csv(file=paste(data_source,"sim_02_modelmisspec_withWSCE_missing_values_lambdas.csv",sep=""))
+lambdas$X=NULL
+df_lambdas  = melt(lambdas)
+ggsave("atelier/sim_02_model_misspec_missing_values_lambdas.pdf",ggplot(data=df_lambdas,aes(x=variable,y=value))+geom_boxplot()+
+         xlab(expression(xi)) + ylab(expression(lambda)))
+mean(df_lambdas$value[df_lambdas$variable=="V1"]!=1)
 
 ### plot with both missing and not missing 
 df_1$full ="Full"
@@ -237,8 +289,3 @@ plot_without_lines <- df_full %>%
  }
  
 ggsave(plot_without_lines, file = "atelier/MAE_lambda.pdf", width = 7, height = 5)
-
-lambdas = read.csv(file=paste(data_source,"sim_02_modelmisspec_withWSCE_missing_values_lambdas.csv",sep=""))
-lambdas$X=NULL
-df_lambdas  = melt(lambdas)
-ggplot(data=df_lambdas,aes(x=variable,y=value))+ggplot2::geom_boxplot()

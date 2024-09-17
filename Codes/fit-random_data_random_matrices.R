@@ -60,7 +60,7 @@ read.csv(file=paste(data_source,"sim_01_error_measures_musigma_unknown.csv",sep=
 
 ## Compute performance over repeated simulations
 set.seed(seed)
-num_sim=10
+num_sim=40
 sim_func = function(seed) sim_cov_with_seed(p, Sigma, seed)
 fit1_func = function(sim) fit_param(n, p, matList2, sim, id_min=1:dim(matList2$Fk[[1]])[1],
                                     filename_error_measures=TRUE,save=FALSE,Sigma=Sigma, compute_WSCE = TRUE)
@@ -73,7 +73,7 @@ write.csv(sims_errors_and_bic,
           file=paste(data_source,"sim_01_sims_errors_and_bic.csv",sep=""))
 
 set.seed(seed)
-num_sim=10
+num_sim=40
 sim_func = function(seed) sim_cov_with_seed(p, Sigma, seed)
 fit1_func = function(sim) fit_param(n, p, matList2, sim, id_min=1:dim(matList2$Fk[[1]])[1],
                                     filename_error_measures=TRUE,save=FALSE,Sigma=Sigma,

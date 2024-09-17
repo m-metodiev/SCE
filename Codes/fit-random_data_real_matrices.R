@@ -84,7 +84,7 @@ fit_param(n, p, matList2, sim2, Sigma=Sigma, id_min=id_min,
 read.csv(file=paste(data_source,"sim_02_error_measures_musigma_unknown.csv",sep=""))
 
 set.seed(seed)
-num_sim=10
+num_sim=40
 sim_func = function(seed) sim_cov_with_seed(p, as.matrix(Sigma), seed)
 fit1_func = function(sim) fit_param(n, p, matList2, sim, id_min=id_min,
                                     filename_error_measures=TRUE,save=FALSE,Sigma=as.matrix(Sigma),
@@ -98,7 +98,7 @@ write.csv(sims_errors_and_bic,
           file=paste(data_source,"sim_02_sims_errors_and_bic.csv",sep=""))
 
 set.seed(seed)
-num_sim=10
+num_sim=40
 sim_func = function(seed) sim_cov_with_seed(p, as.matrix(Sigma), seed)
 fit1_func = function(sim) fit_param(n, p, matList2, sim, id_min=id_min,
                                     filename_error_measures=TRUE,save=FALSE,Sigma=as.matrix(Sigma),

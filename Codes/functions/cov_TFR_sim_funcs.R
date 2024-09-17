@@ -53,7 +53,7 @@ sim_cov =function(p, Sigma,seed=NULL){
 
 sim_errors_and_bic = function(sim_func, fit1_func, fit2_func, num_sim){
   res = list()
-  
+
   for(i in 1:num_sim){
     print(i)
     sim = sim_func(seed=i)

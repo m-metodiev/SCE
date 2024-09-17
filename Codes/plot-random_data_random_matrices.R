@@ -57,13 +57,18 @@ sims_params = sims_errors_and_bic[,param_pos]
 params_1_pos = sapply(names(sims_params), function(s) grepl("param1",s))
 sims_params1 = sims_params[,params_1_pos]
 names(sims_params1) = PARAM1_NAMES
-library(reshape2)
-ggplot(melt(sims_params1),aes(x=variable,y=value)) + geom_boxplot() + 
-  geom_abline(slope=0, intercept=as.numeric(sim_01_true_param[1])) +
-  geom_abline(slope=0, intercept=as.numeric(sim_01_true_param[2])) +
-  geom_abline(slope=0, intercept=as.numeric(sim_01_true_param[3])) +
-  geom_abline(slope=0, intercept=as.numeric(sim_01_true_param[4])) +
-  geom_abline(slope=0, intercept=as.numeric(sim_01_true_param[5])) 
+
+# errors measures of the parameters
+p = 10
+id_min = 1:nrow(Sigma)
+plot_param_sims("atelier/sim_01_param_sims.pdf",
+                sims_params1,p,Sigma,matList2,sim_01_true_param,id_min)
+# [1] "normal confidence intervals"
+# [1] 0.875 0.925 0.950 1.000 0.850
+# [1] 0.92
+# [1] "Chebyshef confidence intervals"
+# [1] 1 1 1 1 1
+# [1] 1
 
 sims_errors_and_bic = sims_errors_and_bic[,!param_pos]
 plot_sims(sims_errors_and_bic=sims_errors_and_bic, filename="atelier/sim_01_error_measures.pdf")
@@ -77,13 +82,18 @@ sims_params = sims_errors_and_bic[,param_pos]
 params_1_pos = sapply(names(sims_params), function(s) grepl("param1",s))
 sims_params1 = sims_params[,params_1_pos]
 names(sims_params1) = PARAM1_NAMES
-library(reshape2)
-ggplot(melt(sims_params1),aes(x=variable,y=value)) + geom_boxplot() + 
-  geom_abline(slope=0, intercept=as.numeric(sim_01_true_param[1])) +
-  geom_abline(slope=0, intercept=as.numeric(sim_01_true_param[2])) +
-  geom_abline(slope=0, intercept=as.numeric(sim_01_true_param[3])) +
-  geom_abline(slope=0, intercept=as.numeric(sim_01_true_param[4])) +
-  geom_abline(slope=0, intercept=as.numeric(sim_01_true_param[5])) 
+
+# errors measures of the parameters
+p = 10
+id_min = 1:nrow(Sigma)
+plot_param_sims("atelier/sim_01_param_sims_mu_sigma_unknown.pdf",
+                sims_params1,p,Sigma,matList2,sim_01_true_param,id_min)
+# [1] "normal confidence intervals"
+# [1] 0.850 0.850 0.850 0.900 0.775
+# [1] 0.845
+# [1] "Chebyshef confidence intervals"
+# [1] 0.975 0.975 0.975 1.000 0.875
+# [1] 0.96
 
 sims_errors_and_bic = sims_errors_and_bic[,!param_pos]
 plot_sims(sims_errors_and_bic=sims_errors_and_bic, filename="atelier/sim_01_error_measures_musigma_unknown.pdf")

@@ -97,7 +97,7 @@ read.csv(file=paste(data_source,"sim_03_bic_combined_effects.csv",sep=""))$bic -
 
 set.seed(seed)
 
-num_sim=10
+num_sim=40
 sim_func = function(seed){
   set.seed(seed)
   sim_covs = sim_cov(p, as.matrix(Sigma))

@@ -78,22 +78,18 @@ sims_params = sims_errors_and_bic[,param_pos]
 params_1_pos = sapply(names(sims_params), function(s) grepl("param1",s))
 sims_params1 = sims_params[,params_1_pos]
 names(sims_params1) = PARAM1_NAMES
-ggplot(melt(sims_params1),aes(x=variable,y=value)) + geom_boxplot() + 
-  geom_abline(slope=0, intercept=as.numeric(sim_02_true_param[1])) +
-  geom_abline(slope=0, intercept=as.numeric(sim_02_true_param[2])) +
-  geom_abline(slope=0, intercept=as.numeric(sim_02_true_param[3])) +
-  geom_abline(slope=0, intercept=as.numeric(sim_02_true_param[4])) +
-  geom_abline(slope=0, intercept=as.numeric(sim_02_true_param[5]))
 
-p <- 10
+p <- 11
 plot_param_sims("atelier/sim_02_param_sims.pdf",
-                sims_params1,p,Sigma,matList2,sim_02_true_param,id_min)
+                sims_params1,p,Sigma,matList2,sim_02_true_param,id_min,type="Chebyshef")
 # [1] "normal confidence intervals"
-# [1] 0.950 0.875 0.900 0.950 0.950
-# [1] 0.925
+# comcol         reg      global contig.beta 
+# 0.950       0.825       0.900       0.875 
+# [1] 0.8875
 # [1] "Chebyshef confidence intervals"
-# [1] 1.000 0.950 1.000 1.000 0.975
-# [1] 0.985
+# comcol         reg      global contig.beta 
+# 0.975       0.950       1.000       0.975 
+# [1] 0.975
 
 sims_errors_and_bic = sims_errors_and_bic[,!param_pos]
 plot_sims(sims_errors_and_bic=sims_errors_and_bic,filename="atelier/sim_02_error_measures.pdf")
@@ -108,21 +104,17 @@ sims_params = sims_errors_and_bic[,param_pos]
 params_1_pos = sapply(names(sims_params), function(s) grepl("param1",s))
 sims_params1 = sims_params[,params_1_pos]
 names(sims_params1) = PARAM1_NAMES
-ggplot(melt(sims_params1),aes(x=variable,y=value)) + geom_boxplot() + 
-  geom_abline(slope=0, intercept=as.numeric(sim_02_true_param[1])) +
-  geom_abline(slope=0, intercept=as.numeric(sim_02_true_param[2])) +
-  geom_abline(slope=0, intercept=as.numeric(sim_02_true_param[3])) +
-  geom_abline(slope=0, intercept=as.numeric(sim_02_true_param[4])) +
-  geom_abline(slope=0, intercept=as.numeric(sim_02_true_param[5]))
 
 plot_param_sims("atelier/sim_02_param_sims_mu_sigma_unknown.pdf",
-                sims_params1,p,Sigma,matList2,sim_02_true_param,id_min)
+                sims_params1,p,Sigma,matList2,sim_02_true_param,id_min,type="Chebyshef")
 # [1] "normal confidence intervals"
-# [1] 0.875 0.775 0.500 0.825 0.875
-# [1] 0.77
+# comcol         reg      global contig.beta 
+# 0.875       0.725       0.500       0.925 
+# [1] 0.75625
 # [1] "Chebyshef confidence intervals"
-# [1] 0.975 0.925 0.925 0.950 0.925
-# [1] 0.94
+# comcol         reg      global contig.beta 
+# 0.975       0.900       0.900       0.975 
+# [1] 0.9375
 
 sims_errors_and_bic = sims_errors_and_bic[,!param_pos]
 plot_sims(sims_errors_and_bic=sims_errors_and_bic,filename="atelier/sim_02_error_measures_musigma_unknown.pdf")
@@ -161,10 +153,10 @@ df_n195 = df[df$n=="195",which(names(df)=="comcol"):which(names(df)=="contig.rho
 plots_n195 = plot_param_sims(" ",df_n195,p,Sigma,matList2,sim_02_true_param,id_min,return_plots = TRUE)
 
 ggsave("atelier/sim_02_different_n_params.pdf",
-       grid.arrange(plots_n14$plot_comcol+xlab(" ")+ylim(c(0,0.31))+ylab("comcol"),plots_n32$plot_comcol+xlab(" ")+ylim(c(0,0.31)),plots_n65$plot_comcol+xlab(" ")+ylim(c(0,0.31)),plots_n115$plot_comcol+xlab(" ")+ylim(c(0,0.31)),plots_n195$plot_comcol+xlab(" ")+ylim(c(0,0.31)),
-                    plots_n14$plot_sameRegion+xlab(" ")+ylim(c(0,0.41))+ylab("sameRegion"),plots_n32$plot_sameRegion+xlab(" ")+ylim(c(0,0.41)),plots_n65$plot_sameRegion+xlab(" ")+ylim(c(0,0.41)),plots_n115$plot_sameRegion+xlab(" ")+ylim(c(0,0.41)),plots_n195$plot_sameRegion+xlab(" ")+ylim(c(0,0.41)),
-                    plots_n14$plot_intercept+xlab("n=14")+ylim(c(0,0.3))+ylab("intercept"),plots_n32$plot_intercept+xlab("n=32")+ylim(c(0,0.3)),plots_n65$plot_intercept+xlab("n=65")+ylim(c(0,0.3)),plots_n115$plot_intercept+xlab("n=115")+ylim(c(0,0.3)),plots_n195$plot_intercept+xlab("n=195")+ylim(c(0,0.3)),
-                    plots_n14$plot_contig+xlab(" ")+ylim(c(0,0.41))+ylab("contig"),plots_n32$plot_contig+xlab(" ")+ylim(c(0,0.41)),plots_n65$plot_contig+xlab(" ")+ylim(c(0,0.41)),plots_n115$plot_contig+xlab(" ")+ylim(c(0,0.41)),plots_n195$plot_contig+xlab(" ")+ylim(c(0,0.41)),ncol=5),
+       grid.arrange(plots_n14$plot_comcol+xlab(" ")+ylim(c(-0.04,0.45))+ylab("comcol"),plots_n32$plot_comcol+xlab(" ")+ylim(c(-0.04,0.45)),plots_n65$plot_comcol+xlab(" ")+ylim(c(-0.04,0.45)),plots_n115$plot_comcol+xlab(" ")+ylim(c(-0.04,0.45)),plots_n195$plot_comcol+xlab(" ")+ylim(c(-0.04,0.45)),
+                    plots_n14$plot_sameRegion+xlab(" ")+ylim(c(-0.05,0.51))+ylab("sameRegion"),plots_n32$plot_sameRegion+xlab(" ")+ylim(c(-0.05,0.51)),plots_n65$plot_sameRegion+xlab(" ")+ylim(c(-0.05,0.51)),plots_n115$plot_sameRegion+xlab(" ")+ylim(c(-0.05,0.51)),plots_n195$plot_sameRegion+xlab(" ")+ylim(c(-0.05,0.51)),
+                    plots_n14$plot_intercept+xlab(" ")+ylim(c(-0.1,0.4))+ylab("intercept"),plots_n32$plot_intercept+xlab(" ")+ylim(c(-0.1,0.4)),plots_n65$plot_intercept+xlab(" ")+ylim(c(-0.1,0.4)),plots_n115$plot_intercept+xlab(" ")+ylim(c(-0.1,0.4)),plots_n195$plot_intercept+xlab(" ")+ylim(c(-0.1,0.4)),
+                    plots_n14$plot_contig+xlab("n=14")+ylim(c(-9,9))+ylab("contig"),plots_n32$plot_contig+xlab("n=32")+ylim(c(-9,9)),plots_n65$plot_contig+xlab("n=65")+ylim(c(-9,9)),plots_n115$plot_contig+xlab("n=115")+ylim(c(-9,9)),plots_n195$plot_contig+xlab("n=195")+ylim(c(-9,9)),ncol=5),
        width=10.6,height=8.14)
 
 # plot WSCE
@@ -283,9 +275,9 @@ plot_without_lines <- df_full %>%
                      name="") + theme(legend.position = "bottom") + 
    labs(y = "MAE", x = expression(xi)) + guides(fill = guide_legend(nrow = 1))
    
- for(i in (1:10)){
-   plot_without_lines = plot_without_lines + geom_vline(xintercept = i+.5, 
-                                                        linetype ="dashed")
- }
+for(i in (1:10)){
+ plot_without_lines = plot_without_lines + geom_vline(xintercept = i+.5, 
+                                                      linetype ="dashed")
+}
  
 ggsave(plot_without_lines, file = "atelier/MAE_lambda.pdf", width = 7, height = 5)

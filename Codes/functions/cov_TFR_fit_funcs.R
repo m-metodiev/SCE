@@ -221,6 +221,20 @@ fit_init = function(id_min, matList, corY,
   return(init)
 }
 
+#' Title
+#'
+#' @param id_min 
+#' @param p 
+#' @param matList 
+#' @param init 
+#' @param Y 
+#' @param link 
+#' @param link_der_rho 
+#'
+#' @return
+#' @export
+#'
+#' @examples
 fit_cov = function(id_min, p, matList, init, Y=NULL,
                    link=function(matList) c(matList$Fk,matList$Gl),
                    link_der_rho=link_der_simple){
@@ -239,6 +253,14 @@ fit_cov = function(id_min, p, matList, init, Y=NULL,
     SigmaHat3 = NULL
     param_fit3 = NULL
   }
+  # fit3 <- try(optim(init, fn=LogLikLogParm, control=list(fnscale=-1, trace=1), method='BFGS'))
+  # if(!is.character(fit3[1])){
+  #   SigmaHat3 <- CovMat_03(id_min=id_min, parm=backward_transform_param(fit3$par), matList=matList, link=link)$Sigma
+  #   param_fit3 = backward_transform_param(fit3$par)
+  # } else{
+  #   SigmaHat3 = NULL
+  #   param_fit3 = NULL
+  # }
   bic = -2*true_LogLikParm_02(id_min, param_fit3, matList, Y, link=link) + length(init)*log(dim(Y)[1])
 
   return(list(SigmaHat1=SigmaHat3,

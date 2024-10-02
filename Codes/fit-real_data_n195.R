@@ -132,8 +132,51 @@ for(k in (1:(2^length(this)))){
     }
     return(mat_list_full)
   }
-  this0= fit_param(n, p, matList_final, sim_final, id_min=id_min,
-                  link=combined_matList_partial, save=FALSE)
+  
+  combined_matList_partial_der = function(matList, link_matList, tilde_G_inv_partial_rho){
+    #browser()
+    link_matList=c(matList$Fk,matList$Gl)
+    n = dim(link_matList[[1]])[1]
+    matList_full = c(matList$Fk,matList$Gl)
+    counter = length(matList_full)
+    sequence = seq_along(matList_full)
+    #calculate all possible Hadamard-products; Exclude global effect matrix
+    for(i in sequence){
+      matList_full[[i]] = matrix(0,n,n) # does not depend on rho
+    }
+    
+    matList_full[[length(matList$Fk)+1]] = tilde_G_inv_partial_rho
+    #browser()
+    for(i in sequence[-length(matList$Fk)]){
+      for(j in sequence[c(-(1:i),-length(matList$Fk))]){
+        
+        counter = counter + 1
+        
+        # use product rule whenever tilde_G_inv is included
+        if(i==(length(matList$Fk)+1)){
+          matList_full[[counter]] = tilde_G_inv_partial_rho * link_matList[[j]]
+        } else if(j==(length(matList$Fk)+1)){
+          matList_full[[counter]] = link_matList[[i]] * tilde_G_inv_partial_rho
+        } else{
+          matList_full[[counter]] = matrix(0,n,n)
+        }
+      }
+    }
+    #browser()
+    # Only select relevant matrices
+    comb_mat = matList_full
+    mat_list_full = list()
+    counter=1
+    for(j in which(as.numeric(intToBits(k))[1:7]==1)){
+      mat_list_full[[counter]] = comb_mat[[j]]
+      counter = counter+1
+    }
+    return(mat_list_full)
+  }
+  #browser()
+  this0 = fit_param(n, p, matList_final, sim_final, id_min=id_min,
+                    link=combined_matList_partial,
+                    link_der_rho = combined_matList_partial_der, save=FALSE)
   #browser()
   this_list[[k]] = this0
   print(k)
@@ -206,7 +249,7 @@ sort_bics[is.na(df$'3contig')] = sort_bics[is.na(df$'3contig')] - log(p)
 rownames(df) = round(sort_bics,1)
 write.csv(df,file=paste(data_source,"sim_final_n195_model_choice.csv",sep=""))
 
-round(df[1,],5)
+round(df[1,],6)
 matList_final$Gl[[1]] = matrix(0,n,n)
 write_param(t(c(df_test[1,])),filename=paste(data_source,"sim_final_n195_combined_param_fit.csv",sep=""),
             matList = matList_final, link=combined_matList)
@@ -225,18 +268,60 @@ combined_matList_partial = function(matList){
   return(mat_list_full)
 }
 
-fit_param(n, p, matList_final, sim_final, id_min=id_min,
-          filename_param_fit=paste(data_source,"sim_final_n195_combined_param_fit.csv",sep=""),
-          filename_ests = paste(data_source,"sim_final_n195_combined_ests.csv",sep=""),
-          filename_bic = paste(data_source,"sim_final_n195_combined_bic.csv",sep=""),
-          link=combined_matList_partial, compute_WSCE=TRUE)
-read.csv(paste(data_source,"sim_final_n195_combined_param_fit.csv",sep=""))
+combined_matList_partial_der = function(matList, link_matList, tilde_G_inv_partial_rho){
+  #browser()
+  link_matList=c(matList$Fk,matList$Gl)
+  n = dim(link_matList[[1]])[1]
+  matList_full = c(matList$Fk,matList$Gl)
+  counter = length(matList_full)
+  sequence = seq_along(matList_full)
+  #calculate all possible Hadamard-products; Exclude global effect matrix
+  for(i in sequence){
+    matList_full[[i]] = matrix(0,n,n) # does not depend on rho
+  }
+  
+  matList_full[[length(matList$Fk)+1]] = tilde_G_inv_partial_rho
+  #browser()
+  for(i in sequence[-length(matList$Fk)]){
+    for(j in sequence[c(-(1:i),-length(matList$Fk))]){
+      
+      counter = counter + 1
+      
+      # use product rule whenever tilde_G_inv is included
+      if(i==(length(matList$Fk)+1)){
+        matList_full[[counter]] = tilde_G_inv_partial_rho * link_matList[[j]]
+      } else if(j==(length(matList$Fk)+1)){
+        matList_full[[counter]] = link_matList[[i]] * tilde_G_inv_partial_rho
+      } else{
+        matList_full[[counter]] = matrix(0,n,n)
+      }
+    }
+  }
+  #browser()
+  # Only select relevant matrices
+  comb_mat = matList_full
+  mat_list_full = list()
+  counter=1
+  for(j in which(c(1,1,1,1,0,1,1)==1)){
+    mat_list_full[[counter]] = comb_mat[[j]]
+    counter = counter+1
+  }
+  return(mat_list_full)
+}
 
 fit_param(n, p, matList_final, sim_final, id_min=id_min,
           filename_param_fit=paste(data_source,"sim_final_n195_combined_param_fit.csv",sep=""),
           filename_ests = paste(data_source,"sim_final_n195_combined_ests.csv",sep=""),
           filename_bic = paste(data_source,"sim_final_n195_combined_bic.csv",sep=""),
-          link=combined_matList_partial)
+          link=combined_matList_partial, 
+          link_der_rho = combined_matList_partial_der, compute_WSCE=TRUE)
+read.csv(paste(data_source,"sim_final_n195_combined_param_fit.csv",sep=""))
+# the WSCE was equal to the SCE
+fit_param(n, p, matList_final, sim_final, id_min=id_min,
+          filename_param_fit=paste(data_source,"sim_final_n195_combined_param_fit.csv",sep=""),
+          filename_ests = paste(data_source,"sim_final_n195_combined_ests.csv",sep=""),
+          filename_bic = paste(data_source,"sim_final_n195_combined_bic.csv",sep=""),
+          link=combined_matList_partial, link_der_rho = combined_matList_partial_der)
 parm=read.csv(paste(data_source,"sim_final_n195_combined_param_fit.csv",sep=""))
 
 covMatstuff = CovMat_03(parm=as.numeric(c(as.matrix(parm))[-1]) ,matList=matList_final,id_min=id_min,link=combined_matList)
@@ -252,4 +337,3 @@ ml_combined = covMatstuff$matList_combined
 alpha_beta = covMatstuff$alpha_beta
 
 sapply(seq_along(alpha_beta), function(i) alpha_beta[i]*sum(ml_combined_supp[[i]]*ml_combined[[i]])/sum(ml_combined_supp[[i]]))
-

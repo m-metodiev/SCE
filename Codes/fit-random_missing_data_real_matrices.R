@@ -89,7 +89,7 @@ fit_param(n, p, matList3, sim3, id_min=id_min, Sigma=Sigma,
           filename_ests = paste(data_source,"sim_03_ests_combined_effects.csv",sep=""), 
           filename_bic = paste(data_source,"sim_03_bic_combined_effects.csv",sep=""),
           filename_error_measures = paste(data_source,"sim_03_error_measures_combined_effects.csv",sep=""),
-          link=combined_matList)
+          link=combined_matList,link_der_rho = link_der_combined)
 read.csv(file=paste(data_source,"sim_03_error_measures_combined_effects.csv",sep=""))
 
 read.csv(file=paste(data_source,"sim_03_bic_combined_effects.csv",sep=""))$bic - 

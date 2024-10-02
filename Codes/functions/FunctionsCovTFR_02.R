@@ -179,8 +179,15 @@ LogLikParm_02 <- function(id_min, parm, matList, Y,
     res = 0
     
     for(t in (1:p)){
+      #browser()
       id_min_t = !is.na(Y[t,])
-      res = res + mvtnorm::dmvnorm(Y[t,id_min_t], sigma=as.matrix(CovMat_03(id_min=id_min, parm=parm, matList=matList, link=link)$Sigma)[id_min_t,id_min_t], log=TRUE)
+      Sigma = as.matrix(CovMat_03(id_min=id_min, 
+                                  parm=parm, matList=matList, 
+                                  link=link)$Sigma)[id_min_t,id_min_t]
+      S = Y[t,id_min_t]%*%t(Y[t,id_min_t])
+      res = res -sum(log(eigen(Sigma)$values))-sum(diag(S%*%solve(Sigma)))
+      #TODO REMOVE THIS
+      #res = res + mvtnorm::dmvnorm(Y[t,id_min_t], sigma=as.matrix(CovMat_03(id_min=id_min, parm=parm, matList=matList, link=link)$Sigma)[id_min_t,id_min_t], log=TRUE)
     }
     
   } else{
@@ -231,7 +238,7 @@ combined_matList = function(matList){
 
 #adds combined effects to the matList via the Hadamard product
 link_der_combined = function(matList, link_matList, tilde_G_inv_partial_rho){
-
+  #browser()
   n = dim(link_matList[[1]])[1]
   matList_full = c(matList$Fk,matList$Gl)
   counter = length(matList_full)
@@ -258,6 +265,7 @@ link_der_combined = function(matList, link_matList, tilde_G_inv_partial_rho){
       }
     }
   }
+  #browser()
   return(matList_full)
 }
 
@@ -271,6 +279,10 @@ link_der_simple = function(matList, link_matList, tilde_G_inv_partial_rho){
   matList_der[[length(matList_der)]] = tilde_G_inv_partial_rho
   return(matList_der)
 }
+
+# These are actually 2 completely different function:
+# One returns the gradient of the loglikelihood, one the gradient of Sigma
+# You can choose which one to use by setting the parameter return_Sigma_der
 # Warning: If Y contains missing values, it is expected to be a matrix with only 1 row
 GradLogLikParm_02 <- function(id_min, parm, matList, Y, 
                               link=function(matList) c(matList$Fk,matList$Gl),
@@ -299,7 +311,7 @@ GradLogLikParm_02 <- function(id_min, parm, matList, Y,
   gradLogLik.rho <- numeric(length(matList$Gl)) 
   # probably only works if numbers of Gl-matrices is equal to 1
   
-  Sigma = CovMat_03(parm, matList,id_min=id_min,link=link)$Sigma[!is.na(Y[1,]),!is.na(Y[1,])]
+  Sigma = as.matrix(CovMat_03(parm, matList,id_min=id_min,link=link)$Sigma)[!is.na(Y[1,]),!is.na(Y[1,])]
   
   # due to numeric issues, Sigma could be computationally singular
   # derivative is set to be very low if that happens
@@ -378,6 +390,32 @@ compute_marginal_cor = function(Y){
   return(corY)
 }
 
+eta_D_der = function(parm, matList, id_min, link, link_der_rho){
+  #browser()
+  parm=sapply(c(parm),function(p)p)
+  covMatstuff = CovMat_03(parm=parm ,matList=matList,id_min=id_min,link=link)
+  ml_combined = covMatstuff$matList_combined
+  Sigma = CovMat_03(parm, matList,id_min=id_min,link=link)$Sigma
+  Sigma_der = GradLogLikParm_02(id_min, parm, matList, Y=matrix(0,ncol=dim(Sigma)[1],nrow=dim(Sigma)[1]), link=link,
+                                link_der_rho=link_der_rho, return_Sigma_der=TRUE)
+  
+  # determine support
+  matList_supp = matList
+  
+  #Set to 1 if countries are not neighbors
+  matList_supp$Al[[1]][is.na(matList_supp$Al[[1]])] = 0
+  matList_supp$Gl[[1]] = (matList_supp$Al[[1]][id_min,id_min] != 0) + 0
+  ml_combined_supp = c(matList_supp$Fk,matList_supp$Gl) 
+  
+  #diagonals are not in the sum
+  diag(ml_combined[[4]]) = 0
+  diag(ml_combined_supp[[4]]) = 0
+  
+  eta_D_der = c(sum(parm[4]*ml_combined[[4]]*ml_combined_supp[[4]]),
+                sum(Sigma_der[[4]]*ml_combined_supp[[4]]))/sum(ml_combined_supp[[4]])
+  return(eta_D_der)
+}
+
 #Calculate average effect (=mean effect over matrix support)
 avg_effect = function(parm, matList, id_min, link){
   
@@ -393,6 +431,15 @@ avg_effect = function(parm, matList, id_min, link){
   ml_combined = covMatstuff$matList_combined
   alpha_beta = covMatstuff$alpha_beta
   
+  for(Fk in ml_combined_supp){
+    diag(Fk)=0
+  }
+  for(Fk in ml_combined){
+    diag(Fk)=0
+  }
+  # comparing the diagonals makes no sense
+  
+  #browser()
   sapply(seq_along(alpha_beta), function(i) alpha_beta[i]*sum(ml_combined_supp[[i]]*ml_combined[[i]])/sum(ml_combined_supp[[i]]))
 }
 
@@ -407,7 +454,7 @@ compute_lambda_opt = function(id_min, parm, matList, link, link_der_rho, Y, pear
     parm[length(parm)-1]=1e-4
   }
   
-  # the covariance is given by the inverse of the Fisher information
+  # the covariance matrix is given by the inverse of the Fisher information
   Fisher_mat = Fisher_information(id_min, parm, matList, link, link_der_rho)
   Fisher_mat = solve(Fisher_mat)
   

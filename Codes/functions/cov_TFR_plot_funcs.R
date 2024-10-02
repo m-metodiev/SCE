@@ -208,7 +208,7 @@ plot_sims = function(sims_errors_and_bic,filename, has_missingvalues=FALSE){
 # and compute covarage of confidence intervals
 plot_param_sims = function(name, sims_params1, p, Sigma, 
                            matList, sim_01_true_param, id_min,
-                           return_plots=FALSE){
+                           type="Chebyshef",return_plots=FALSE){
   #browser()
   asym_sds = t(apply(sims_params1, 1, 
                      function(s_params1) sqrt(diag(solve(Fisher_information(1:nrow(Sigma),
@@ -216,13 +216,33 @@ plot_param_sims = function(name, sims_params1, p, Sigma,
                                                                             matList,
                                                                             link=function(matList) c(matList$Fk,matList$Gl),
                                                                             link_der_rho=link_der_simple))/p))))
+  # combine sd for rho and delta to sd for eta via the Delta method
+  eta_D_ders = apply(sims_params1, 1, 
+                     function(s_params1) eta_D_der(parm=s_params1, matList=matList, id_min=id_min,
+                                                   link=function(matList) c(matList$Fk,matList$Gl),
+                                                   link_der_rho=link_der_simple))
+  asym_sds[,4] = sapply(1:nrow(sims_params1), function(s)  sqrt(t(eta_D_ders[,s])%*%
+                                                                  (solve(Fisher_information(1:nrow(Sigma),
+                                                                                            sapply(c(sims_params1[s,]),function(t)t),
+                                                                                           matList,
+                                                                                           link=function(matList) c(matList$Fk,matList$Gl),
+                                                                                           link_der_rho=link_der_simple))[4:5,4:5]/p)%*%t(t(eta_D_ders[,s]))))
+  asym_sds=asym_sds[,1:4] # rho and delta are combined to eta_D
+  sqrt(sum(eta_D_ders[,1]^2))*asym_sds[1,4]
+
   N <- nrow(asym_sds)
+  #browser()
+  avg_effect_true = avg_effect(sapply(sim_01_true_param,function(s)s), matList = matList2,
+                               id_min = id_min,link=function(matList) c(matList$Fk,matList$Gl))
+  avg_effects = apply(sims_params1, 1, 
+                      function(s_params1)   avg_effect(sapply(s_params1,function(s) s), matList = matList,
+                                                       id_min = id_min,link=function(matList) c(matList$Fk,matList$Gl)))
   
   # calculate how often the parameter is included in the 
   # 95 percent confidence interval (via normal distribution quantiles)
   coverage = sapply(1:N,
-                    function(s) (sims_params1[s,]+qnorm(0.975)*asym_sds[s,] >= sim_01_true_param) &
-                      (sims_params1[s,]-qnorm(0.975)*asym_sds[s,] <= sim_01_true_param))
+                    function(s) (avg_effects[,s]+qnorm(0.975)*asym_sds[s,] >= avg_effect_true) &
+                      (avg_effects[,s]-qnorm(0.975)*asym_sds[s,] <= avg_effect_true))
   
   print("normal confidence intervals")
   print(apply(coverage,1,mean))
@@ -232,8 +252,8 @@ plot_param_sims = function(name, sims_params1, p, Sigma,
   # calculate how often the parameter is included in the 
   # 95 percent confidence interval (via Chebyshef inequality)
   coverage = sapply(1:N,
-                    function(s) (sims_params1[s,]+sqrt(20)*asym_sds[s,] >= sim_01_true_param) &
-                      (sims_params1[s,]-sqrt(20)*asym_sds[s,] <= sim_01_true_param))
+                    function(s) (avg_effects[,s]+sqrt(20)*asym_sds[s,] >= avg_effect_true) &
+                      (avg_effects[,s]-sqrt(20)*asym_sds[s,] <= avg_effect_true))
   
   print("Chebyshef confidence intervals")
   print(apply(coverage,1,mean))
@@ -244,26 +264,59 @@ plot_param_sims = function(name, sims_params1, p, Sigma,
   #                                    matList,
   #                                    link=function(matList) c(matList$Fk,matList$Gl),
   #                                    link_der_rho=link_der_simple))/p))
+  
+  ### TEST ###
+  if(type=="normal"){
+    estimate = as.data.frame(cbind(t(avg_effects),
+                                   t(avg_effects)+qnorm(0.975)*asym_sds,
+                                   t(avg_effects)-qnorm(0.975)*asym_sds))
+  } else{ #i.e., type is Chebyshef
+    estimate = as.data.frame(cbind(t(avg_effects),
+                                   t(avg_effects)+sqrt(20)*asym_sds,
+                                   t(avg_effects)-sqrt(20)*asym_sds))
+  }
 
-  avg_effect_true = avg_effect(sapply(sim_01_true_param,function(s)s), matList = matList2,
-                               id_min = id_min,link=function(matList) c(matList$Fk,matList$Gl))
-  avg_effects = apply(sims_params1, 1, 
-                      function(s_params1)   avg_effect(sapply(s_params1,function(s) s), matList = matList,
-                                                       id_min = id_min,link=function(matList) c(matList$Fk,matList$Gl)))
+  names(estimate) = c(unique(names(estimate)),
+                           paste0("upper_",unique(names(estimate))),
+                           paste0("lower_",unique(names(estimate))))
+  estimate$jitter=1:40
+  
+  plot_comcol =   ggplot(estimate,aes(x=jitter,y=comcol)) + geom_point(size=0.5) + 
+    geom_errorbar(aes(ymin=lower_comcol,ymax=upper_comcol))+ ylab("") + 
+    geom_abline(intercept=avg_effect_true[1], slope=0,color="red") +
+    theme(axis.text.x=element_blank(), axis.ticks.x=element_blank()) + xlab("comcol")
+  plot_sameRegion =   ggplot(estimate,aes(x=jitter,y=reg)) + geom_point(size=0.5) + 
+    geom_errorbar(aes(ymin=lower_reg,ymax=upper_reg))+ ylab("") + 
+    geom_abline(intercept=avg_effect_true[2], slope=0,color="red") +
+    theme(axis.text.x=element_blank(), axis.ticks.x=element_blank()) + xlab("sameRegion")
+  plot_intercept =   ggplot(estimate,aes(x=jitter,y=global)) + geom_point(size=0.5) + 
+    geom_errorbar(aes(ymin=lower_global,ymax=upper_global))+ ylab("") + 
+    geom_abline(intercept=avg_effect_true[3], slope=0,color="red") +
+    theme(axis.text.x=element_blank(), axis.ticks.x=element_blank()) + xlab("intercept")
+  plot_contig =   ggplot(estimate,aes(x=jitter,y=contig.beta)) + geom_point(size=0.5) + 
+    geom_errorbar(aes(ymin=lower_contig.beta,ymax=upper_contig.beta))+ ylab("") + 
+    geom_abline(intercept=avg_effect_true[4], slope=0,color="red") +
+    theme(axis.text.x=element_blank(), axis.ticks.x=element_blank()) + xlab("contig")
+  ### TEST ###
+
   #browser()
   
-  plot_comcol = ggplot(as.data.frame(t(avg_effects)),aes(y=comcol)) + 
-    geom_boxplot() + xlab("comcol") + ylab("") + 
-    geom_abline(intercept=avg_effect_true[1], slope=0,color="red") 
-  plot_sameRegion = ggplot(as.data.frame(t(avg_effects)),aes(y=reg)) + 
-    geom_boxplot() + xlab("sameRegion") + ylab("") +
-    geom_abline(intercept=avg_effect_true[2], slope=0,color="red")
-  plot_intercept = ggplot(as.data.frame(t(avg_effects)),aes(y=global)) + 
-    geom_boxplot() + xlab("intercept") + ylab("") +
-    geom_abline(intercept=avg_effect_true[3], slope=0,color="red")
-  plot_contig = ggplot(as.data.frame(t(avg_effects)),aes(y=contig.beta)) + 
-    geom_boxplot() + xlab("contig") + ylab("") +
-    geom_abline(intercept=avg_effect_true[4], slope=0,color="red")
+  # plot_comcol = ggplot(as.data.frame(t(avg_effects)),aes(y=comcol)) + 
+  #   geom_boxplot() + xlab("comcol") + ylab("") + 
+  #   geom_abline(intercept=avg_effect_true[1], slope=0,color="red") +
+  #   theme(axis.text.x=element_blank(), axis.ticks.x=element_blank())
+  # plot_sameRegion = ggplot(as.data.frame(t(avg_effects)),aes(y=reg)) + 
+  #   geom_boxplot() + xlab("sameRegion") + ylab("") +
+  #   geom_abline(intercept=avg_effect_true[2], slope=0,color="red") +
+  #   theme(axis.text.x=element_blank(), axis.ticks.x=element_blank())
+  # plot_intercept = ggplot(as.data.frame(t(avg_effects)),aes(y=global)) +
+  #   geom_boxplot() + xlab("intercept") + ylab("") +
+  #   geom_abline(intercept=avg_effect_true[3], slope=0,color="red") +
+  #   theme(axis.text.x=element_blank(), axis.ticks.x=element_blank())
+  # plot_contig = ggplot(as.data.frame(t(avg_effects)),aes(y=contig.beta)) + 
+  #   geom_boxplot() + xlab("contig") + ylab("") +
+  #   geom_abline(intercept=avg_effect_true[4], slope=0,color="red") +
+  #   theme(axis.text.x=element_blank(), axis.ticks.x=element_blank())
   
   if(return_plots){
     return(list(plot_comcol=plot_comcol,

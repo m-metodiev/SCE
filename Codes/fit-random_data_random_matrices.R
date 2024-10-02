@@ -45,7 +45,7 @@ fit_param(n, p, matList2, sim2, Sigma=Sigma,id_min=1:dim(matList2$Fk[[1]])[1],
           filename_param_fit=paste(data_source,"sim_01_param_fit.csv",sep=""),
           filename_ests = paste(data_source,"sim_01_ests.csv",sep=""),
           filename_bic = paste(data_source,"sim_01_bic.csv",sep=""),
-          filename_error_measures = paste(data_source,"sim_01_error_measures.csv",sep=""),
+          filename_error_measures = paste(data_source,"sim_01_error_measures.csv",sep=""), 
           compute_WSCE = TRUE)
 
 read.csv(file=paste(data_source,"sim_01_error_measures.csv",sep=""))

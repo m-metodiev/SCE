@@ -342,6 +342,7 @@ GradLogLikParm_02 <- function(id_min, parm, matList, Y,
 }
 
 Fisher_information = function(id_min, parm, matList, link, link_der_rho){
+  #browser()
   Sigma = CovMat_03(parm, matList,id_min=id_min,link=link)$Sigma
   Sigma_inv = solve(Sigma)
   Sigma_der = GradLogLikParm_02(id_min, parm, matList, Y=matrix(0,ncol=dim(Sigma)[1],nrow=dim(Sigma)[1]), link=link,
@@ -390,7 +391,7 @@ compute_marginal_cor = function(Y){
   return(corY)
 }
 
-eta_D_der = function(parm, matList, id_min, link, link_der_rho){
+eta_D_der = function(parm, matList, id_min, link, link_der_rho,index=4){
   #browser()
   parm=sapply(c(parm),function(p)p)
   covMatstuff = CovMat_03(parm=parm ,matList=matList,id_min=id_min,link=link)
@@ -405,14 +406,14 @@ eta_D_der = function(parm, matList, id_min, link, link_der_rho){
   #Set to 1 if countries are not neighbors
   matList_supp$Al[[1]][is.na(matList_supp$Al[[1]])] = 0
   matList_supp$Gl[[1]] = (matList_supp$Al[[1]][id_min,id_min] != 0) + 0
-  ml_combined_supp = c(matList_supp$Fk,matList_supp$Gl) 
+  ml_combined_supp = link(matList_supp)
   
   #diagonals are not in the sum
-  diag(ml_combined[[4]]) = 0
-  diag(ml_combined_supp[[4]]) = 0
+  diag(ml_combined[[index]]) = 0
+  diag(ml_combined_supp[[index]]) = 0
   
-  eta_D_der = c(sum(parm[4]*ml_combined[[4]]*ml_combined_supp[[4]]),
-                sum(Sigma_der[[4]]*ml_combined_supp[[4]]))/sum(ml_combined_supp[[4]])
+  eta_D_der = c(sum(parm[index]*ml_combined[[index]]*ml_combined_supp[[index]]),
+                sum(Sigma_der[[index]]*ml_combined_supp[[index]]))/sum(ml_combined_supp[[index]])
   return(eta_D_der)
 }
 

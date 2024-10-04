@@ -84,12 +84,12 @@ plot_param_sims("atelier/sim_02_param_sims.pdf",
                 sims_params1,p,Sigma,matList2,sim_02_true_param,id_min,type="Chebyshef")
 # [1] "normal confidence intervals"
 # comcol         reg      global contig.beta 
-# 0.950       0.825       0.900       0.875 
-# [1] 0.8875
+# 0.950       0.875       0.900       0.900 
+# [1] 0.90625
 # [1] "Chebyshef confidence intervals"
 # comcol         reg      global contig.beta 
-# 0.975       0.950       1.000       0.975 
-# [1] 0.975
+# 1.000       1.000       1.000       0.975 
+# [1] 0.99375
 
 sims_errors_and_bic = sims_errors_and_bic[,!param_pos]
 plot_sims(sims_errors_and_bic=sims_errors_and_bic,filename="atelier/sim_02_error_measures.pdf")
@@ -109,12 +109,12 @@ plot_param_sims("atelier/sim_02_param_sims_mu_sigma_unknown.pdf",
                 sims_params1,p,Sigma,matList2,sim_02_true_param,id_min,type="Chebyshef")
 # [1] "normal confidence intervals"
 # comcol         reg      global contig.beta 
-# 0.875       0.725       0.500       0.925 
-# [1] 0.75625
+# 0.875       0.825       0.500       0.925 
+# [1] 0.78125
 # [1] "Chebyshef confidence intervals"
 # comcol         reg      global contig.beta 
-# 0.975       0.900       0.900       0.975 
-# [1] 0.9375
+# 0.975       0.975       0.900       1.000 
+# [1] 0.9625
 
 sims_errors_and_bic = sims_errors_and_bic[,!param_pos]
 plot_sims(sims_errors_and_bic=sims_errors_and_bic,filename="atelier/sim_02_error_measures_musigma_unknown.pdf")

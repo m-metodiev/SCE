@@ -49,6 +49,7 @@ id_min = preproc_res$id_min
 Sigma_base_model = as.matrix(CovMat_03(parm=as.matrix(read_param(filename=paste(data_source,"sim_final_n195_param_fit.csv",sep=""))),
                                        matList=matList_final,
                                        id_min=id_min)$Sigma)
+
 Sigma_interation_model = as.matrix(CovMat_03(parm=as.matrix(read_param(filename=paste(data_source,"sim_final_n195_combined_param_fit.csv",sep=""))),
                                              matList=matList_final,
                                              id_min=id_min, link=combined_matList)$Sigma)

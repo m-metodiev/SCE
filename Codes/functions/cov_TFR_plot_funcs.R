@@ -208,10 +208,63 @@ plot_sims = function(sims_errors_and_bic,filename, has_missingvalues=FALSE){
 # and compute covarage of confidence intervals
 plot_param_sims = function(name, sims_params1, p, Sigma, 
                            matList, sim_01_true_param, id_min,
-                           type="Chebyshef",return_plots=FALSE){
+                           type="Chebyshef",return_plots=FALSE,return_only_CI=FALSE,
+                           link=NULL,link_der_rho=NULL){
   #browser()
+  #matList$Gl[[1]] = calc_tilde_G_inv(matList$Ml[[1]],matList$Al[[1]],sims_params1[length(sims_params1)])[id_min,id_min]
+  if(return_only_CI){ # used to calculate CI for one parameter vector
+    #matList$Gl[[1]] = calc_tilde_G_inv(matList$Ml[[1]],matList$Al[[1]],sims_params1[length(sims_params1)])[id_min,id_min]
+    if(is.null(link) | is.null(link_der_rho)){
+      link = function(matList) c(matList$Fk,matList$Gl)
+      link_der_rho=link_der_simple
+    }
+    
+    asym_sds = sqrt(diag(solve(Fisher_information(id_min,
+                                                   sapply(sims_params1,function(s) s),
+                                                   matList,
+                                                   link=link,
+                                                   link_der_rho=link_der_simple))/p))
+    
+    eta_D_ders = eta_D_der(parm=sims_params1, matList=matList, id_min=id_min,
+                           link=link,link_der_rho=link_der_simple)
+    asym_sds[4] = sqrt(t(eta_D_ders)%*%(solve(Fisher_information(id_min,
+                                                                 sapply(c(sims_params1),function(t)t),
+                                                                 matList,
+                                                                 link=link,
+                                                                 link_der_rho=link_der_rho))[c(4,length(sims_params1)),c(4,length(sims_params1))]/p)%*%t(t(eta_D_ders)))
+    
+    if(length(sims_params1)>5){
+      #browser()
+      eta_D_ders = eta_D_der(parm=sims_params1, matList=matList, id_min=id_min,
+                             link=link,link_der_rho=link_der_simple,index = 5)
+      asym_sds[5] = sqrt(t(eta_D_ders)%*%(solve(Fisher_information(id_min,
+                                                                   sapply(c(sims_params1),function(t)t),
+                                                                   matList,
+                                                                   link=link,
+                                                                   link_der_rho=link_der_rho))[c(5,length(sims_params1)),c(5,length(sims_params1))]/p)%*%t(t(eta_D_ders)))
+      eta_D_ders = eta_D_der(parm=sims_params1, matList=matList, id_min=id_min,
+                             link=link,link_der_rho=link_der_simple,index = 6)
+      asym_sds[6] = sqrt(t(eta_D_ders)%*%(solve(Fisher_information(id_min,
+                                                                   sapply(c(sims_params1),function(t)t),
+                                                                   matList,
+                                                                   link=link,
+                                                                   link_der_rho=link_der_rho))[c(6,length(sims_params1)),c(6,length(sims_params1))]/p)%*%t(t(eta_D_ders)))
+    }
+    avg_effect_true = avg_effect(sapply(sims_params1,function(s)s), matList = matList,
+                                 id_min = id_min,link=link)
+    asym_sds = asym_sds[-1]
+    
+    # Create confidence intervals based on Chebyshev's inequality
+    df = as.data.frame(t(rbind(avg_effect_true-sqrt(20)*asym_sds,
+                               avg_effect_true,
+                               avg_effect_true+sqrt(20)*asym_sds)))
+    names(df) = c("lower","mid","upper")
+    return(df)
+    # change matList to obtain derivative of Hadamard product
+    #eta_A_D_ders = 
+  }
   asym_sds = t(apply(sims_params1, 1, 
-                     function(s_params1) sqrt(diag(solve(Fisher_information(1:nrow(Sigma),
+                     function(s_params1) sqrt(diag(solve(Fisher_information(id_min,
                                                                             sapply(s_params1,function(s) s),
                                                                             matList,
                                                                             link=function(matList) c(matList$Fk,matList$Gl),
@@ -222,7 +275,7 @@ plot_param_sims = function(name, sims_params1, p, Sigma,
                                                    link=function(matList) c(matList$Fk,matList$Gl),
                                                    link_der_rho=link_der_simple))
   asym_sds[,4] = sapply(1:nrow(sims_params1), function(s)  sqrt(t(eta_D_ders[,s])%*%
-                                                                  (solve(Fisher_information(1:nrow(Sigma),
+                                                                  (solve(Fisher_information(id_min,
                                                                                             sapply(c(sims_params1[s,]),function(t)t),
                                                                                            matList,
                                                                                            link=function(matList) c(matList$Fk,matList$Gl),
@@ -232,7 +285,7 @@ plot_param_sims = function(name, sims_params1, p, Sigma,
 
   N <- nrow(asym_sds)
   #browser()
-  avg_effect_true = avg_effect(sapply(sim_01_true_param,function(s)s), matList = matList2,
+  avg_effect_true = avg_effect(sapply(sim_01_true_param,function(s)s), matList = matList,
                                id_min = id_min,link=function(matList) c(matList$Fk,matList$Gl))
   avg_effects = apply(sims_params1, 1, 
                       function(s_params1)   avg_effect(sapply(s_params1,function(s) s), matList = matList,

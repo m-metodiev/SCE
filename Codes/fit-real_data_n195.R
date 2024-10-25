@@ -120,7 +120,7 @@ read.csv(paste(data_source,"sim_final_n195_param_fit.csv",sep=""))
 
 this_list = list()
 this = c(0,0,0,0,0,0,0)
-for(k in (1:(2^length(this)))){
+for(k in (1:(2^length(this)-1))){
   combined_matList_partial = function(matList){
     #browser()
     comb_mat = combined_matList(matList)

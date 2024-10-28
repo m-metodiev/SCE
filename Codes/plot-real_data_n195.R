@@ -18,7 +18,7 @@ rownames(df)=df$X
 df$X=NULL
 library(viridis)
 ggheatmap(df) +
-  scale_fill_viridis() +
+  scale_fill_viridis(na.value = "lightgrey") +
   guides(fill=guide_colorbar("Value")) +
   scale_x_discrete( labels = expression("comcol","sameRegion","intercept","contig","comcol & sameRegion","comcol & contig", "sameRegion & contig"))+
   scale_y_discrete(limits = rownames(df)) +

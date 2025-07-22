@@ -158,12 +158,12 @@ calc_tilde_G_inv_partial_rho = function(M, A, rho){
 # constant for the BIC;
 true_LogLikParm_02 <- function(id_min, parm, matList, Y,
                           link=function(matList) c(matList$Fk,matList$Gl)){
-
+  num_observations = nrow(Y)
   has_missing_values = sum(is.na(Y))>0
   n = dim(matList$Ml[[1]])[1]
   res = 0
   
-  for(t in (1:p)){
+  for(t in (1:num_observations)){
     id_min_t = !is.na(Y[t,])
     res = res + mvtnorm::dmvnorm(Y[t,id_min_t], sigma=as.matrix(CovMat_03(id_min=id_min, parm=parm, matList=matList, link=link)$Sigma)[id_min_t,id_min_t], log=TRUE)
   }
@@ -172,13 +172,14 @@ true_LogLikParm_02 <- function(id_min, parm, matList, Y,
 
 LogLikParm_02 <- function(id_min, parm, matList, Y,
                           link=function(matList) c(matList$Fk,matList$Gl)){
-
+  #browser()
+  num_observations = nrow(Y)
   has_missing_values = sum(is.na(Y))>0
   if(has_missing_values){
     n = dim(matList$Ml[[1]])[1]
     res = 0
     
-    for(t in (1:p)){
+    for(t in (1:num_observations)){
       #browser()
       id_min_t = !is.na(Y[t,])
       Sigma = as.matrix(CovMat_03(id_min=id_min, 
@@ -186,8 +187,6 @@ LogLikParm_02 <- function(id_min, parm, matList, Y,
                                   link=link)$Sigma)[id_min_t,id_min_t]
       S = Y[t,id_min_t]%*%t(Y[t,id_min_t])
       res = res -sum(log(eigen(Sigma)$values))-sum(diag(S%*%solve(Sigma)))
-      #TODO REMOVE THIS
-      #res = res + mvtnorm::dmvnorm(Y[t,id_min_t], sigma=as.matrix(CovMat_03(id_min=id_min, parm=parm, matList=matList, link=link)$Sigma)[id_min_t,id_min_t], log=TRUE)
     }
     
   } else{
@@ -195,12 +194,12 @@ LogLikParm_02 <- function(id_min, parm, matList, Y,
                                 parm=parm, matList=matList, 
                                 link=link)$Sigma)
     S = Y[1,]%*%t(Y[1,])
-    if(p!=1){
-      for(t in (2:p)){
+    if(num_observations!=1){
+      for(t in (2:num_observations)){
         S = S + Y[t,]%*%t(Y[t,])
       }
     }
-    S = S/p
+    S = S/num_observations
     #browser()
     res = -sum(log(eigen(Sigma)$values))-sum(diag(S%*%solve(Sigma)))
   }

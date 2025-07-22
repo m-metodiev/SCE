@@ -9,6 +9,8 @@ library(corrplot)
 library(viridis)
 library(ggplot2)
 library(reshape2)
+library(heatmaply)
+library(GGally)
 
 data_source = "data/"
 ESTS_NAMES = c("Pearson","LW","Sparse","hatSigma0","hatSigma")
@@ -17,13 +19,13 @@ df=read.csv(file=paste(data_source,"sim_final_n195_model_choice.csv",sep=""))
 rownames(df)=df$X
 df$X=NULL
 library(viridis)
-ggheatmap(df) +
+ggheatmap::ggheatmap(df) +
   scale_fill_viridis(na.value = "lightgrey") +
   guides(fill=guide_colorbar("Value")) +
   scale_x_discrete( labels = expression("comcol","sameRegion","intercept","contig","comcol & sameRegion","comcol & contig", "sameRegion & contig"))+
   scale_y_discrete(limits = rownames(df)) +
   annotate('rect', xmin = 0.5, xmax = 7.5, ymin = 0.5, ymax = 1.5,
-           fill = NA, color = 'magenta', size = 1) +
+           fill = NA, color = 'magenta', linewidth = 1) +
   theme(axis.text.x=element_text(size=15), axis.text.y=element_text(size=16))
 ggsave("atelier/real_data_n195_modelchoice.pdf", width=16,height=10)
 
@@ -45,6 +47,44 @@ dim(matList_final$Fk[[1]])
 id_min = preproc_res$id_min
 
 ## End read data ##
+
+Y = FITcomps_std_total[2:12,which(all_min==1)]
+Y = Y[,sapply(id_min,function(id) which(preproc_res$FITcomps_std_iso==preproc_res$iso_id_key[id]))]
+
+### Plot raw data ###
+data_Y= as.data.frame(Y)
+names(data_Y) = names_by_id[id_min]
+df_selected = cbind(data_Y$Germany,
+                    data_Y$France,
+                    data_Y$Switzerland,
+                    data_Y$Luxembourg,
+                    data_Y$`Republic of Korea`)
+colnames(df_selected)=c("Germany","France","Switzerland","Luxembourg","Republic of \nKorea")
+
+# same as the default but with se=FALSE and color="blue"
+custom_reg_line <- function(data, mapping, ...) {
+  ggplot(data = data, mapping = mapping) +
+    geom_point() +
+    geom_smooth(method = "lm", color = "blue",se = FALSE, ...)
+}
+# same but with bigger size
+custom_cor <- function(data, mapping, ...) {
+  ggally_cor(data, mapping, size = 7, ...)  # Customize size here
+}
+my_theme <- theme_bw() +
+  theme(strip.background = element_rect(fill = "white"), text = element_text(face="bold", size=12),
+  )
+theme_set(my_theme)
+plot_ggpairs = ggpairs(df_selected,columns=1:5,
+                       lower=list(continuous=custom_reg_line),
+                       upper = list(continuous = custom_cor)) +
+  theme(
+    strip.text = element_text(size = 20),        # Diagonal variable names
+    axis.text = element_text(size = 14),         # Axis tick labels
+    axis.title = element_text(size = 14)         # (Optional) axis titles
+  )
+ggsave("atelier/sim_final_n195_ggpairs.pdf",plot_ggpairs, device="pdf", width=12, height=12)
+### End plot raw data ###
 
 Sigma_base_model = as.matrix(CovMat_03(parm=as.matrix(read_param(filename=paste(data_source,"sim_final_n195_param_fit.csv",sep=""))),
                                        matList=matList_final,

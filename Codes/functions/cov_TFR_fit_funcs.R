@@ -59,7 +59,7 @@ fit_param = function(n, p, matList, sim, id_min,
   
   if((p>1) & (!simple)){
     ests = list(as.matrix(cor(Y_nonmissing)),
-                cov2cor(covFactorModel(xts(x=Y_nonmissing, order.by=Sys.Date()-1:p),K=length(init))),
+                cov2cor(covFactorModel::covFactorModel(xts(x=Y_nonmissing, order.by=Sys.Date()-1:p),K=length(init))),
                 cov2cor(CVglasso(X=Y_nonmissing)$Sigma),
                 cov2cor(linearShrinkLWEst(Y_nonmissing)),
                 as.matrix(Sigma_0_optim_frob),
@@ -261,6 +261,8 @@ fit_cov = function(id_min, p, matList, init, Y=NULL,
   #   SigmaHat3 = NULL
   #   param_fit3 = NULL
   # }
+  print("INIT:")
+  print(backward_transform_param(init))
   bic = -2*true_LogLikParm_02(id_min, param_fit3, matList, Y, link=link) + length(init)*log(dim(Y)[1])
 
   return(list(SigmaHat1=SigmaHat3,

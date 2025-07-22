@@ -180,11 +180,13 @@ index_103 = which((Sigma_countries$reg_name=="Eastern Africa")|(Sigma_countries$
 index_n = list(index_14,index_32,index_55,index_103,1:195)
 
 set.seed(seed)
-res_list=list()
+res_list_known=list()
+res_list_unknown=list()
 matList1=matList2
 source("functions/cov_TFR_fit_funcs.R")
 
-res_list_list = list()
+res_list_list_known = list()
+res_list_list_unknown = list()
 lambdas = matrix(ncol=length(index_n),nrow=40)
 
 for(N in 1:40){
@@ -199,29 +201,51 @@ for(N in 1:40){
     for(k in (1:3)){
       matList1$Fk[[k]] = matList2$Fk[[k]][index_n[[i]],index_n[[i]]]
     }
-    res_list[[i]] = c(fit_param(length(index_n[[i]]), p, matList1, sim_stretched, 
+    res_list_known[[i]] = c(fit_param(length(index_n[[i]]), p, matList1, sim_stretched, 
                                 id_min=id_min[index_n[[i]]], save=FALSE,
                                 filename_error_measures=TRUE,
-                                Sigma=Sigma_stretched, compute_WSCE = TRUE),list(sim_stretched))
+                                Sigma=Sigma_stretched, 
+                                compute_WSCE = TRUE),list(sim_stretched))
+    res_list_unknown[[i]] = c(fit_param(length(index_n[[i]]), p, matList1, 
+                                        sim_stretched, 
+                                        id_min=id_min[index_n[[i]]], save=FALSE,
+                                        filename_error_measures=TRUE,
+                                        Sigma=Sigma_stretched, 
+                                        compute_WSCE = TRUE, 
+                                        normalize_data = TRUE),
+                              list(sim_stretched))
     #browser()
     
   }
-  res_list_list[[N]] = res_list
+  res_list_list_known[[N]] = res_list_known
+  res_list_list_unknown[[N]] = res_list_unknown
 }
 
 # Only save the error measures, lambda, and the parameters.
-read_data_varying_n = function(N){
-  t(sapply(seq_along(index_n), function(i) c(res_list_list[[N]][[i]][[1]][1,],
-                                             res_list_list[[N]][[i]][[4]],
-                                             res_list_list[[N]][[i]][[5]],
+read_data_varying_n_known = function(N){
+  t(sapply(seq_along(index_n), function(i) c(res_list_list_known[[N]][[i]][[1]][1,],
+                                             res_list_list_known[[N]][[i]][[4]],
+                                             res_list_list_known[[N]][[i]][[5]],
+                                             paste0(length(index_n[[i]])))))
+}
+read_data_varying_n_unknown = function(N){
+  t(sapply(seq_along(index_n), function(i) c(res_list_list_unknown[[N]][[i]][[1]][1,],
+                                             res_list_list_unknown[[N]][[i]][[4]],
+                                             res_list_list_unknown[[N]][[i]][[5]],
                                              paste0(length(index_n[[i]])))))
 }
 
-data=cbind(read_data_varying_n(1),1)
+data_known=cbind(read_data_varying_n_known(1),1)
 for(i in (2:N)){
-  data = rbind(data, cbind(read_data_varying_n(i),i))
+  data_known = rbind(data_known, cbind(read_data_varying_n_known(i),i))
 }
-write.csv(as.data.frame(data),file=paste(data_source,"sim_02_different_n.csv",sep=""))
+write.csv(as.data.frame(data_known),file=paste(data_source,"sim_02_different_n.csv",sep=""))
+
+data_unknown=cbind(read_data_varying_n_unknown(1),1)
+for(i in (2:N)){
+  data_unknown = rbind(data_unknown, cbind(read_data_varying_n_unknown(i),i))
+}
+write.csv(as.data.frame(data_unknown),file=paste(data_source,"sim_02_different_n_unknown.csv",sep=""))
 
 ### model misspecification ###
 

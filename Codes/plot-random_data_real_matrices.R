@@ -137,34 +137,43 @@ df$n[df$n=="32"]="032"
 df$n[df$n=="65"]="065"
 
 #plot params
-df_n14 = df[df$n=="014",which(names(df)=="comcol"):which(names(df)=="contig.rho")]
-plots_n14=plot_param_sims(" ",df_n14,p,Sigma,matList2,sim_02_true_param,id_min,return_plots = TRUE)
+# df_n14 = df[df$n=="014",which(names(df)=="comcol"):which(names(df)=="contig.rho")]
+# plots_n14=plot_param_sims(" ",df_n14,p,Sigma,matList2,sim_02_true_param,id_min,return_plots = TRUE)
+# 
+# df_n32 = df[df$n=="032",which(names(df)=="comcol"):which(names(df)=="contig.rho")]
+# plots_n32=plot_param_sims(" ",df_n32,p,Sigma,matList2,sim_02_true_param,id_min,return_plots = TRUE)
+# 
+# df_n65 = df[df$n=="065",which(names(df)=="comcol"):which(names(df)=="contig.rho")]
+# plots_n65 = plot_param_sims(" ",df_n65,p,Sigma,matList2,sim_02_true_param,id_min,return_plots = TRUE)
+# 
+# df_n115 = df[df$n=="115",which(names(df)=="comcol"):which(names(df)=="contig.rho")]
+# plots_n115 = plot_param_sims(" ",df_n115,p,Sigma,matList2,sim_02_true_param,id_min,return_plots = TRUE)
+# 
+# df_n195 = df[df$n=="195",which(names(df)=="comcol"):which(names(df)=="contig.rho")]
+# plots_n195 = plot_param_sims(" ",df_n195,p,Sigma,matList2,sim_02_true_param,id_min,return_plots = TRUE)
 
-df_n32 = df[df$n=="032",which(names(df)=="comcol"):which(names(df)=="contig.rho")]
-plots_n32=plot_param_sims(" ",df_n32,p,Sigma,matList2,sim_02_true_param,id_min,return_plots = TRUE)
+###
+df_unknown=read.csv(file=paste(data_source,"sim_02_different_n_unknown.csv",sep=""),row.names=1)
+names(df_unknown)=c(ESTS_NAMES,"lambda",PARAM1_NAMES,"n","N")
+df_unknown$n=c("",df_unknown$n)[-1]
+df_unknown$n[df_unknown$n=="14"]="014"
+df_unknown$n[df_unknown$n=="32"]="032"
+df_unknown$n[df_unknown$n=="65"]="065"
+plot_MAE_unknown = ggplot(df_unknown, aes(x=n, y=WSCE)) + geom_boxplot()+scale_x_discrete(labels=c("14","32","65","115","195"))+ylab("MAE (unknown)")+xlab("d")+ylim(c(0,.25))
+###
 
-df_n65 = df[df$n=="065",which(names(df)=="comcol"):which(names(df)=="contig.rho")]
-plots_n65 = plot_param_sims(" ",df_n65,p,Sigma,matList2,sim_02_true_param,id_min,return_plots = TRUE)
-
-df_n115 = df[df$n=="115",which(names(df)=="comcol"):which(names(df)=="contig.rho")]
-plots_n115 = plot_param_sims(" ",df_n115,p,Sigma,matList2,sim_02_true_param,id_min,return_plots = TRUE)
-
-df_n195 = df[df$n=="195",which(names(df)=="comcol"):which(names(df)=="contig.rho")]
-plots_n195 = plot_param_sims(" ",df_n195,p,Sigma,matList2,sim_02_true_param,id_min,return_plots = TRUE)
-
-ggsave("atelier/sim_02_different_n_params.pdf",
-       grid.arrange(plots_n14$plot_comcol+xlab(" ")+ylim(c(-0.04,0.45))+ylab("comcol"),plots_n32$plot_comcol+xlab(" ")+ylim(c(-0.04,0.45)),plots_n65$plot_comcol+xlab(" ")+ylim(c(-0.04,0.45)),plots_n115$plot_comcol+xlab(" ")+ylim(c(-0.04,0.45)),plots_n195$plot_comcol+xlab(" ")+ylim(c(-0.04,0.45)),
-                    plots_n14$plot_sameRegion+xlab(" ")+ylim(c(-0.05,0.51))+ylab("sameRegion"),plots_n32$plot_sameRegion+xlab(" ")+ylim(c(-0.05,0.51)),plots_n65$plot_sameRegion+xlab(" ")+ylim(c(-0.05,0.51)),plots_n115$plot_sameRegion+xlab(" ")+ylim(c(-0.05,0.51)),plots_n195$plot_sameRegion+xlab(" ")+ylim(c(-0.05,0.51)),
-                    plots_n14$plot_intercept+xlab(" ")+ylim(c(-0.1,0.4))+ylab("intercept"),plots_n32$plot_intercept+xlab(" ")+ylim(c(-0.1,0.4)),plots_n65$plot_intercept+xlab(" ")+ylim(c(-0.1,0.4)),plots_n115$plot_intercept+xlab(" ")+ylim(c(-0.1,0.4)),plots_n195$plot_intercept+xlab(" ")+ylim(c(-0.1,0.4)),
-                    plots_n14$plot_contig+xlab("n=14")+ylim(c(-9,9))+ylab("contig"),plots_n32$plot_contig+xlab("n=32")+ylim(c(-9,9)),plots_n65$plot_contig+xlab("n=65")+ylim(c(-9,9)),plots_n115$plot_contig+xlab("n=115")+ylim(c(-9,9)),plots_n195$plot_contig+xlab("n=195")+ylim(c(-9,9)),ncol=5),
-       width=10.6,height=8.14)
+# ggsave("atelier/sim_02_different_n_params.pdf",
+#        grid.arrange(plots_n14$plot_comcol+xlab(" ")+ylim(c(-0.04,0.45))+ylab("comcol"),plots_n32$plot_comcol+xlab(" ")+ylim(c(-0.04,0.45)),plots_n65$plot_comcol+xlab(" ")+ylim(c(-0.04,0.45)),plots_n115$plot_comcol+xlab(" ")+ylim(c(-0.04,0.45)),plots_n195$plot_comcol+xlab(" ")+ylim(c(-0.04,0.45)),
+#                     plots_n14$plot_sameRegion+xlab(" ")+ylim(c(-0.05,0.51))+ylab("sameRegion"),plots_n32$plot_sameRegion+xlab(" ")+ylim(c(-0.05,0.51)),plots_n65$plot_sameRegion+xlab(" ")+ylim(c(-0.05,0.51)),plots_n115$plot_sameRegion+xlab(" ")+ylim(c(-0.05,0.51)),plots_n195$plot_sameRegion+xlab(" ")+ylim(c(-0.05,0.51)),
+#                     plots_n14$plot_intercept+xlab(" ")+ylim(c(-0.1,0.4))+ylab("intercept"),plots_n32$plot_intercept+xlab(" ")+ylim(c(-0.1,0.4)),plots_n65$plot_intercept+xlab(" ")+ylim(c(-0.1,0.4)),plots_n115$plot_intercept+xlab(" ")+ylim(c(-0.1,0.4)),plots_n195$plot_intercept+xlab(" ")+ylim(c(-0.1,0.4)),
+#                     plots_n14$plot_contig+xlab("n=14")+ylim(c(-9,9))+ylab("contig"),plots_n32$plot_contig+xlab("n=32")+ylim(c(-9,9)),plots_n65$plot_contig+xlab("n=65")+ylim(c(-9,9)),plots_n115$plot_contig+xlab("n=115")+ylim(c(-9,9)),plots_n195$plot_contig+xlab("n=195")+ylim(c(-9,9)),ncol=5),
+#        width=10.6,height=8.14)
 
 # plot WSCE
-plot_MAE = ggplot(df, aes(x=n, y=WSCE)) + geom_boxplot()+scale_x_discrete(labels=c("14","32","65","115","195"))+ylab("MAE")+xlab("d")
+plot_MAE = ggplot(df, aes(x=n, y=WSCE)) + geom_boxplot()+scale_x_discrete(labels=c("14","32","65","115","195"))+ylab("MAE (known)")+xlab("d")+ylim(c(0,.25))
 
-plot_MAE
 ggsave(plot_MAE,filename="atelier/sim_02_different_n.pdf", width=7,height=2,device="pdf")
-
+ggsave(plot_MAE_unknown,filename="atelier/sim_02_different_n_unknown.pdf", width=7,height=2,device="pdf")
 
 # model misspecification
 
@@ -280,4 +289,4 @@ for(i in (1:10)){
                                                       linetype ="dashed")
 }
  
-ggsave(plot_without_lines, file = "atelier/MAE_lambda.pdf", width = 7, height = 5)
+ggsave(plot_without_lines+theme(text = element_text(size = 16)), file = "atelier/MAE_lambda.pdf", width = 7, height = 5)

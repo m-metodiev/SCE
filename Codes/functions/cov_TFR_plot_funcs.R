@@ -1,5 +1,5 @@
 PACKAGES_VIS = c("UpSetR", "ggplot2", "grid", "plyr", "ggheatmap",
-                 "igraph", "ggcorrplot", "gridExtra", "corrplot", "RColorBrewer") # plot stuff
+                 "igraph", "ggcorrplot", "gridExtra", "corrplot", "RColorBrewer","glue","dplyr") # plot stuff
 PACKAGES = c(PACKAGES_VIS) # all of the stuff
 lapply(PACKAGES, require, character.only = TRUE)
 
@@ -529,6 +529,31 @@ plot_heatmaps = function(matList,
     h_order = hclust(as.dist(1-Sigma_cluster))$order
     df=as.data.frame(Sigma)
     names(df) = names_by_id[id_min]
+    
+    ###
+    # browser()
+    # # library(GGally)
+    # data_Y= as.data.frame(sim_final$Y)
+    # names(data_Y) = names_by_id[id_min]
+    # df_selected = cbind(data_Y$Germany,
+    #                     data_Y$France,
+    #                     data_Y$Switzerland,
+    #                     data_Y$Luxembourg,
+    #                     data_Y$`Republic of Korea`)
+    # colnames(df_selected)=c("Germany","France","Switzerland","Luxembourg","Republic of Korea")
+    # pairs(df_selected)
+    # # Custom panel function to add regression line
+    # panel.lm <- function(x, y, ...) {
+    #   points(x, y, ...)
+    #   abline(lm(y ~ x), col = "red")
+    # }
+    # 
+    # # Scatterplot matrix with regression lines
+    # pairs(df_selected, lower.panel = panel.lm, upper.panel = panel.lm)
+    
+    # ggpairs(df_selected,columns=1:5,lower=list(continuous="smooth"))
+    ###
+    
     df = df[h_order, h_order][195:1,]
     df_col = paste0(195:1," ",colnames(df))
     df_col[as.numeric(sapply(df_col,function(s) str_split(s,pattern=" ")[[1]][1]))<10] =
@@ -542,6 +567,7 @@ plot_heatmaps = function(matList,
     col_metaData = as.data.frame(cbind(Sigma_countries$reg_name,Sigma_countries$reg_name))
     rownames(col_metaData) = Sigma_countries$country_name
     col_metaData = col_metaData[sort(rownames(col_metaData),index.return=T)$ix,][order(sort(sapply(colnames(df), function(s) str_split(s," ")[[1]][2]),index.return=TRUE)$ix),]
+    # colnames(col_metaData)=c("regions","continents")
     colnames(col_metaData)=c("regions","continents")
     
     rownames(row_metaData) <- rownames(df)
@@ -568,27 +594,93 @@ plot_heatmaps = function(matList,
                                legendName="corr",
                                color=main_color)
     } else{
+      #browser()
       if(is.null(main_color)){
-        main_color = magma(sum(c(Sigma)>=0), alpha = 1, begin = 0, end = 1, direction = 1)
+        main_color = colorRampPalette(c("white", "red"),
+                                      space = "Lab")(sum(c(Sigma)>=0))
+        # main_color = rocket(sum(c(Sigma)>=0), alpha = 1, begin = 0, end = 1, direction = 1)
+        # main_color = magma(sum(c(Sigma)>=0), alpha = 1, begin = 0, end = 1, direction = 1)
       }
+      
+      # order everything starting with an "Republic" or "United" back to how it was
+      col_metaData[(195:1)[1],] = "Northern Europe" # change UKingdom to Northern Europe
+      col_metaData[(195:1)[12],] = "Northern America" # change USA to Northern America
+      col_metaData[(195:1)[32],] = "Eastern Europe" # change Republic of Moldova to Eastern Europe
+      col_metaData[(195:1)[60],] = "Eastern Asia" # change Republic of Korea to Eastern Asia
+      col_metaData[(195:1)[64],] = "Western Asia" # change United Arab Emirates to Western Asia
+      col_metaData[(195:1)[119],] = "Eastern Africa" # changing United Republic of Tanzania to Eastern Africa
+      
       p = ggheatmap::ggheatmap(df, annotation_rows = row_metaData,
                                annotation_cols = col_metaData,
                                annotation_color = col,
-                               #text_show_rows = c(""),
+                               text_show_rows = c(""),
                                text_show_cols = c(""),
                                legendName="corr",
                                color=main_color)
+      if(TRUE){
+        
+        df2 <- df
+        df2 <- df2[195:1,]
+        mat <- df2
+        
+        col_metaData_true <- col_metaData
+        rownames(col_metaData_true) <- gsub("[0-9]+","",rev(rownames(col_metaData_true)))
+        row_metaData_true<- row_metaData %>% map_dfr(rev) %>%  as.data.frame() 
+        rownames(row_metaData_true) <-gsub("[0-9]+","",rev(rownames(row_metaData)))
+        for(i in 1:nrow(mat)){
+          for(j in 1:ncol(mat)){
+            mat[i,j] <- glue(gsub("[0-9]+","",rownames(mat)[i])," (colonizer: " ,row_metaData_true$comcols[i]," region: ",col_metaData_true$regions[i],")\n",
+                             gsub("[0-9]+","",rownames(mat)[j])," (colonizer: " ,row_metaData_true$comcols[j]," region: ",col_metaData_true$regions[j] ,")\n",
+                             "Correlation:",round(df2[i,j],5))
+          }
+        }
+        
+        heatmaply(df2, colors = main_color, 
+                  col_side_colors = col_metaData_true, 
+                  row_side_colors = row_metaData_true, 
+                  scale ="none",cexRow = 0,
+                  showticklabels = c(FALSE, FALSE), 
+                  custom_hovertext =mat,
+                  suppress_default_hovertext =TRUE,
+                  dendrogram = "none", 
+                  row_side_palette =col$comcols, 
+                  col_side_palette = col$regions)   %>%
+          plotly::layout(showlegend = FALSE,
+                         annotations = list(
+                           visible = FALSE
+                         ))
+      }
     }
-
-    ggsave(filename, p, device="jpeg", width=20, height=20)
     
+    
+    ###
     library(cowplot)
     legend1 <- cowplot::get_legend(p[[1]])
     legend2 <- cowplot::get_legend(p[[2]])
     legend3 <- cowplot::get_legend(p[[3]])
-    plot2=grid.arrange(legend2[[1]][[1]],legend3[[1]][[1]],legend1[[1]][[1]])
-    ggsave("atelier/sim_final_n195_full_data_covmat_legend.jpeg",plot2, device="jpeg", width=4, height=9.5)
-    print(median(df[df<0]))
+    
+    #plot2=grid.arrange(legend2[[1]][[1]],legend3[[1]][[1]],legend1[[1]][[1]])
+    plot2=grid.arrange(legend1[[1]][[1]],legend2[[1]][[1]],legend3[[1]][[1]],nrow=1)
+    
+    ggsave("atelier/sim_final_n195_full_data_covmat_legend.pdf",plot2, device="pdf", width=12, height=9.5)
+    #print(median(df[df<0]))
+    ###
+    
+    p[[1]]=p[[1]] + theme(legend.position = "None")
+    p[[2]]=p[[2]] + theme_minimal(base_size = 0) + theme(legend.position = "None")
+    p[[3]]=p[[3]] + theme_minimal(base_size = 0) + theme(legend.position = "None")
+    ggsave(filename, p, device="jpeg", width=20, height=20)
+
+    #library(cowplot)
+    #legend1 <- cowplot::get_legend(p[[1]])
+    #legend2 <- cowplot::get_legend(p[[2]])
+    #legend3 <- cowplot::get_legend(p[[3]])
+
+    #plot2=grid.arrange(legend2[[1]][[1]],legend3[[1]][[1]],legend1[[1]][[1]])
+    #plot2=grid.arrange(legend1[[1]][[1]],legend2[[1]][[1]],legend3[[1]][[1]],nrow=1)
+
+    #ggsave("atelier/sim_final_n195_full_data_covmat_legend.pdf",plot2, device="pdf", width=12, height=9.5)
+    #print(median(df[df<0]))
     
     return(list(main_range=range(df),main_color=main_color))
     

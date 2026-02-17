@@ -12,6 +12,8 @@ library(viridis)
 library(ggplot2)
 library(reshape2)
 
+### Simulation 3 ###
+
 data_source = "data/"
 ESTS_NAMES = c("Pearson", "FM", "Glasso", "LW","IVE", "SCE", "WSCE")#c("Pearson","LW","Sparse","FM","hatSigma0","hatSigma","WSCE")
 COLVEC = c("brown","grey","pink","pink3","beige","orange2","darkorange2")
@@ -21,7 +23,7 @@ PARAM2_NAMES = c(PARAM1_NAMES, "comcol.and.reg", "comcol.and.config",
 
 source("functions/get_data_covar.R")
 
-### Read in data ###
+## BEGIN read in data ##
 read_plot = read_plot_FITcomps_std(filename="../Data/TFR_pieces_202311/standardized_residuals_202311/FITcomps_std_residuals_sample%i_202311.txt") # Initializing and plotting the real data 
 FITcomps_std_total = read_plot$FITcomps_std_total
 FITcomps_std = read_plot$FITcomps_std
@@ -54,8 +56,9 @@ covMat <- CovMat_03(parm, matList2,id_min=id_min)
 Sigma <- covMat$Sigma#cov2cor(covMat$Sigma)
 sim2 = sim_cov(p, as.matrix(Sigma))
 
-### End read data ###
+## END read in data ##
 
+## BEGIN plot 1 simulation ##
 my_theme <- theme_bw() +
   theme(strip.background = element_rect(fill = "white"), text = element_text(face="bold", size=12),
   )
@@ -67,10 +70,9 @@ plot_cov(matList2,Sigma,
          colvec=c("brown","grey","pink","pink3","beige","orange2","darkorange2"),
          model="corY", ests_names=ESTS_NAMES,order=c(1, 2, 3, 4, 7, 5, 6))
 ggsave("atelier/sim_03_ests.jpeg", width=5.3,height=4.07,device="jpeg",,dpi=700)
+## END plot 1 simulation ##
 
-
-### Simulation 3 ###
-
+## BEGIN boxplots and confidence intervals ##
 matList3 = read_matList(filename = paste(data_source,"sim_02_matList.csv",sep=""))
 (sim_03_true_param = read_param(filename=paste(data_source,"sim_02_true_param.csv",sep="")))
 
@@ -100,3 +102,4 @@ plot_param_sims("atelier/sim_03_param_sims.pdf",
 
 sims_errors_and_bic = sims_errors_and_bic[,!param_pos]
 plot_sims(sims_errors_and_bic=sims_errors_and_bic, filename="atelier/sim_03_error_measures.pdf")
+## END boxplots and confidence intervals ##

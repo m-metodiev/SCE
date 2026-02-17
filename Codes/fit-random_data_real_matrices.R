@@ -11,6 +11,8 @@ data_source = "data/"
 
 #### Simulation 2: Matrices from the real data ####
 
+## BEGIN Initialization ##
+
 seed=3
 set.seed(seed)
 
@@ -46,28 +48,32 @@ dim(matList_final$Fk[[1]])
 id_min = preproc_res$id_min
 
 # Parms
-n <- 195; p <- 11; rho = .35
+dimension <- 195; num_observations <- 11; beta = .35
 
 matList2 = matList_final
 write_matList(matList=matList2, filename=paste(data_source,"sim_02_matList.csv",sep=""))
 
-parm = c(.05,0.09,.11,.74,rho)
+parm = c(.05,0.09,.11,.74,beta)
 write_param(t(parm),matList=matList2,
             filename=paste(data_source,"sim_02_true_param.csv",sep=""))
 
-test = calc_tilde_G_inv(matList2$Ml[[1]],matList2$Al[[1]],rho)[id_min,id_min]
+test = calc_tilde_G_inv(matList2$Ml[[1]],matList2$Al[[1]],beta)[id_min,id_min]
 diag(test)=0
 max(test)*.74#maximum neighbor effect around .26
-G_inv = calc_tilde_G_inv(matList2$Ml[[1]],matList2$Al[[1]],rho)[id_min,id_min]
+G_inv = calc_tilde_G_inv(matList2$Ml[[1]],matList2$Al[[1]],beta)[id_min,id_min]
 A = matList2$Al[[1]][id_min,id_min]
 A[is.na(A)] = 0 # since islands can return NA-values
 
 covMat <- CovMat_03(parm, matList2,id_min=id_min)
 Sigma <- covMat$Sigma#cov2cor(covMat$Sigma)
-sim2 = sim_cov(p, as.matrix(Sigma))
 
+## END Initialization ##
+
+## BEGIN one simulation ##
+
+sim2 = sim_cov(num_observations, as.matrix(Sigma))
 source("functions/cov_TFR_fit_funcs.R")
-fit_param(n, p, matList2, sim2, Sigma=Sigma, id_min=id_min,
+fit_param(dimension, num_observations, matList2, sim2, Sigma=Sigma, id_min=id_min,
           filename_param_fit=paste(data_source,"sim_02_param_fit.csv",sep=""),
           filename_ests = paste(data_source,"sim_02_ests.csv",sep=""),
           filename_bic = paste(data_source,"sim_02_bic.csv",sep=""),
@@ -75,7 +81,7 @@ fit_param(n, p, matList2, sim2, Sigma=Sigma, id_min=id_min,
           compute_WSCE = TRUE)
 read.csv(file=paste(data_source,"sim_02_error_measures.csv",sep=""))
 
-fit_param(n, p, matList2, sim2, Sigma=Sigma, id_min=id_min,
+fit_param(dimension, num_observations, matList2, sim2, Sigma=Sigma, id_min=id_min,
           filename_param_fit=paste(data_source,"sim_02_param_fit_musigma_unknown.csv",sep=""),
           filename_ests = paste(data_source,"sim_02_ests_musigma_unknown.csv",sep=""),
           filename_bic = paste(data_source,"sim_02_bic_musigma_unknown.csv",sep=""),
@@ -83,35 +89,41 @@ fit_param(n, p, matList2, sim2, Sigma=Sigma, id_min=id_min,
           compute_WSCE = TRUE, normalize_data = TRUE)
 read.csv(file=paste(data_source,"sim_02_error_measures_musigma_unknown.csv",sep=""))
 
+## END one simulation ##
+
+## BEGIN many simulations for mu and sigma known ##
 set.seed(seed)
 num_sim=40
-sim_func = function(seed) sim_cov_with_seed(p, as.matrix(Sigma), seed)
-fit1_func = function(sim) fit_param(n, p, matList2, sim, id_min=id_min,
+sim_func = function(seed) sim_cov_with_seed(num_observations, as.matrix(Sigma), seed)
+fit1_func = function(sim) fit_param(dimension, num_observations, matList2, sim, id_min=id_min,
                                     filename_error_measures=TRUE,save=FALSE,Sigma=as.matrix(Sigma),
                                     compute_WSCE = TRUE)
-fit2_func = function(sim) fit_param(n, p, matList2, sim, id_min=id_min,
+fit2_func = function(sim) fit_param(dimension, num_observations, matList2, sim, id_min=id_min,
                                     filename_error_measures = TRUE,
-                                    link=combined_matList, link_der_rho = link_der_combined,
+                                    link=combined_matList, link_der_beta = link_der_combined,
                                     save=FALSE,Sigma=as.matrix(Sigma), compute_WSCE = TRUE)
 sims_errors_and_bic = sim_errors_and_bic(sim_func,fit1_func,fit2_func,num_sim)
 write.csv(sims_errors_and_bic,
           file=paste(data_source,"sim_02_sims_errors_and_bic.csv",sep=""))
+## END many simulations for mu and sigma known ##
 
+## BEGIN many simulations for mu and sigma unknown ##
 set.seed(seed)
 num_sim=40
-sim_func = function(seed) sim_cov_with_seed(p, as.matrix(Sigma), seed)
-fit1_func = function(sim) fit_param(n, p, matList2, sim, id_min=id_min,
+sim_func = function(seed) sim_cov_with_seed(num_observations, as.matrix(Sigma), seed)
+fit1_func = function(sim) fit_param(dimension, num_observations, matList2, sim, id_min=id_min,
                                     filename_error_measures=TRUE,save=FALSE,Sigma=as.matrix(Sigma),
                                     compute_WSCE = TRUE,normalize_data = TRUE)
-fit2_func = function(sim) fit_param(n, p, matList2, sim, id_min=id_min,
+fit2_func = function(sim) fit_param(dimension, num_observations, matList2, sim, id_min=id_min,
                                     filename_error_measures = TRUE,
-                                    link=combined_matList, link_der_rho = link_der_combined,
+                                    link=combined_matList, link_der_beta = link_der_combined,
                                     save=FALSE,Sigma=as.matrix(Sigma), compute_WSCE = TRUE, normalize_data = TRUE)
 sims_errors_and_bic = sim_errors_and_bic(sim_func,fit1_func,fit2_func,num_sim)
 write.csv(sims_errors_and_bic,
           file=paste(data_source,"sim_02_sims_errors_and_bic_musigma_unknown.csv",sep=""))
+## END many simulations for mu and sigma known ##
 
-## Compute performance with varying n
+## BEGIN read in data about regions ##
 
 # read in data about regions
 library(cepiigeodist)
@@ -123,9 +135,9 @@ all(covar_ord_by_id%>%  pull(name_o) == names_by_id) # on retrouve bien comme Ma
 iso3 <- covar_ord_by_id %>% pull(code_o)
 missing_iso <- iso3[!iso3 %in%geo_cepii$iso3 ]
 
-## Let's get the information (of  colonizer) using covar 
+# Let's get the information (of  colonizer) using covar 
 
-### Récupération des informations dans geo_cepii
+# Récupération des informations dans geo_cepii
 get_count_info <- function(iso_sel, missing_iso, covar, geo_cepii){
   
   same_count <-  covar  %>% filter(code_o ==iso_sel &  !code_d%in% missing_iso) %>% 
@@ -147,7 +159,7 @@ colon_full<- tibble(iso3 = missing_iso) %>%
   bind_rows(geo_cepii %>% select(iso3,colonizer1))
 
 
-## Now let's merge everything we need 
+# Now let's merge everything we need 
 
 info_coutries <- countries_num %>% 
   select(country_name,`ISO3 Alpha-code`, reg_name) %>%
@@ -161,8 +173,9 @@ Sigma_countries <- Sigma %>%
   left_join(info_coutries, by =c( "iso3" = "ISO3 Alpha-code"))
 Sigma_countries$reg_name
 
-# end read in data about regions
+## END read in data about regions ##
 
+## BEGIN Compute performance with varying dimension ##
 #Check number of countries per index set
 index_14 = which((Sigma_countries$reg_name=="Middle Africa")|(Sigma_countries$reg_name=="Southern Africa"))
 index_32 = which((Sigma_countries$reg_name=="Eastern Africa")|(Sigma_countries$reg_name=="Southern Africa")|(Sigma_countries$reg_name=="Middle Africa"))
@@ -193,7 +206,7 @@ for(N in 1:40){
   for(i in seq_along(index_n)){
     
     Sigma_stretched = Sigma[index_n[[i]],index_n[[i]]]
-    sim2 = sim_cov_with_seed(p, as.matrix(Sigma),seed=N)
+    sim2 = sim_cov_with_seed(num_observations, as.matrix(Sigma),seed=N)
     sim_stretched = sim2
     sim_stretched$Y = sim2$Y[,index_n[[i]]]
     sim_stretched$corY = cor_from_standard_errors(sim_stretched$Y)
@@ -201,12 +214,12 @@ for(N in 1:40){
     for(k in (1:3)){
       matList1$Fk[[k]] = matList2$Fk[[k]][index_n[[i]],index_n[[i]]]
     }
-    res_list_known[[i]] = c(fit_param(length(index_n[[i]]), p, matList1, sim_stretched, 
+    res_list_known[[i]] = c(fit_param(length(index_n[[i]]), num_observations, matList1, sim_stretched, 
                                 id_min=id_min[index_n[[i]]], save=FALSE,
                                 filename_error_measures=TRUE,
                                 Sigma=Sigma_stretched, 
                                 compute_WSCE = TRUE),list(sim_stretched))
-    res_list_unknown[[i]] = c(fit_param(length(index_n[[i]]), p, matList1, 
+    res_list_unknown[[i]] = c(fit_param(length(index_n[[i]]), num_observations, matList1, 
                                         sim_stretched, 
                                         id_min=id_min[index_n[[i]]], save=FALSE,
                                         filename_error_measures=TRUE,
@@ -246,14 +259,15 @@ for(i in (2:N)){
   data_unknown = rbind(data_unknown, cbind(read_data_varying_n_unknown(i),i))
 }
 write.csv(as.data.frame(data_unknown),file=paste(data_source,"sim_02_different_n_unknown.csv",sep=""))
+## END Compute performance with varying dimension ##
 
-### model misspecification ###
+## BEGIN model misspecification (no missing data) ##
 
 matList3 = read_matList(filename = paste(data_source,"sim_01_matList.csv",sep=""))
 
 set.seed(seed)
 
-# parameter for Bar(Sigma) (rho does not matter since spatial effect is 0)
+# parameter for Bar(Sigma) (beta does not matter since spatial effect is 0)
 (sim_01_true_param = c(.99,0,0,0,.982))#.982
 Sigma_extra = CovMat_03(as.matrix(sim_01_true_param), matList3)$Sigma
 
@@ -279,9 +293,9 @@ lambdas = matrix(ncol=length(lambda_vec),nrow=N_samples)
 for(N in 1:N_samples){
   for(i in seq_along(lambda_vec)){
     Sigma_stretched = lambda_vec[i]*extra_matrix + (1-lambda_vec[i])*as.matrix(Sigma)
-    sim_stretched = sim_cov_with_seed(p, Sigma_stretched,seed=N)
+    sim_stretched = sim_cov_with_seed(num_observations, Sigma_stretched,seed=N)
     
-    res_list[[i]] = c(fit_param(n, p, matList1, sim_stretched, 
+    res_list[[i]] = c(fit_param(dimension, num_observations, matList1, sim_stretched, 
                                 id_min=id_min, save=FALSE,
                                 filename_error_measures=TRUE,
                                 Sigma=Sigma_stretched,compute_WSCE = TRUE),list(sim_stretched))
@@ -321,8 +335,9 @@ df$type = apply(as.matrix(df$variable),1,function(s) strsplit(s," ")[[1]][1])
 df$variable=NULL
 write.csv(df,file=paste(data_source,"sim_02_modelmisspec_withWSCE.csv",sep=""))
 write.csv(lambdas,file=paste(data_source,"sim_02_modelmisspec_withWSCE_lambdas.csv",sep=""))
+## END model misspecification (no missing data) ##
 
-### model misspecification (missing errors) ###
+## BEGIN model misspecification (missing data) ##
 matList3 = read_matList(filename = paste(data_source,"sim_01_matList.csv",sep=""))
 
 set.seed(seed)
@@ -352,10 +367,10 @@ lambdas = matrix(ncol=length(lambda_vec),nrow=N_samples)
 for(N in 1:N_samples){
   for(i in seq_along(lambda_vec)){
     Sigma_stretched = lambda_vec[i]*extra_matrix + (1-lambda_vec[i])*as.matrix(Sigma)
-    sim_stretched = sim_cov_with_seed(p, Sigma_stretched,seed=N)
+    sim_stretched = sim_cov_with_seed(num_observations, Sigma_stretched,seed=N)
     sim_stretched$Y[is.na(Y)] = NA
 
-    res_list[[i]] = c(fit_param(n, p, matList1, sim_stretched, 
+    res_list[[i]] = c(fit_param(dimension, num_observations, matList1, sim_stretched, 
                                 id_min=id_min, save=FALSE,
                                 filename_error_measures=TRUE,
                                 Sigma=Sigma_stretched,compute_WSCE = TRUE),list(sim_stretched))
@@ -395,3 +410,4 @@ df$type = apply(as.matrix(df$variable),1,function(s) strsplit(s," ")[[1]][1])
 df$variable=NULL
 write.csv(df,file=paste(data_source,"sim_02_modelmisspec_withWSCE_missing_values.csv",sep=""))
 write.csv(lambdas,file=paste(data_source,"sim_02_modelmisspec_withWSCE_missing_values_lambdas.csv",sep=""))
+## END model misspecification (missing data) ##

@@ -1,6 +1,8 @@
 library(wpp2010)
 library(ggplot2)
 library(gridExtra)
+
+### Plots the data from the WPP (2010) ###
 data("tfr")
 par(mfrow=c(1,5))
 cex.main = 2

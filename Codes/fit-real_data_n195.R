@@ -9,6 +9,7 @@ data_source = "data/"
 
 ## Path 2: Use ALL countries
 
+## BEGIN Initialization ##
 source("functions/get_data_covar.R")
 
 read_plot = read_plot_FITcomps_std(filename="../Data/TFR_pieces_202311/standardized_residuals_202311/FITcomps_std_residuals_sample%i_202311.txt") # Initializing and plotting the real data 
@@ -29,12 +30,12 @@ set.seed(seed)
 
 Y = FITcomps_std_total[2:12,which(all_min==1)]
 Y = Y[,sapply(id_min,function(id) which(preproc_res$FITcomps_std_iso==preproc_res$iso_id_key[id]))]
-n=dim(Y)[2]
-corY = matrix(ncol=n,nrow=n)
+dimension=dim(Y)[2]
+corY = matrix(ncol=dimension,nrow=dimension)
 
 #use pairwise correlation estimates
-for(i in (1:n)){
-  for(j in (i:n)){
+for(i in (1:dimension)){
+  for(j in (i:dimension)){
     #browser()
     Yi_notmissing = !is.na(Y[,i])
     Yj_notmissing = !is.na(Y[,j])
@@ -44,40 +45,38 @@ for(i in (1:n)){
   }
 }
 mean(is.na(corY))
-#library(missMDA)
-#Y_nonmissing = imputePCA(Y,ncp=6)$completeObs
-#corY = cor(Y_nonmissing)
-n = dim(matList_final$Fk[[1]])[1]
-p=11
+dimension = dim(matList_final$Fk[[1]])[1]
+num_observations = 11
 sim_final = list(corY=corY,Y=Y)
 
 source("functions/cov_TFR_fit_funcs.R")
+## END Initialization ##
 
-### START: check identifiability (this may take a long time) ###
+## BEGIN check identifiability (this may take a long time) ##
 
-# grid-search for rho/=rho' 
+# grid-search for beta/=beta' 
 # (independence of the matrices is checked automatically)
 beta=1.5
 num_grid_sim=100
 xi = (1:(num_grid_sim+1))/(num_grid_sim+1)
-#tan-hyperbolic-spaced grid because rho approaches 1
-rho_vec = (1-tanh(beta*(1+xi))/tanh(beta))/(min((1-tanh(beta*(1+xi))/tanh(beta))))
-rho_vec = rho_vec[-length(rho_vec)]
+#tan-hyperbolic-spaced grid because beta approaches 1
+beta_vec = (1-tanh(beta*(1+xi))/tanh(beta))/(min((1-tanh(beta*(1+xi))/tanh(beta))))
+beta_vec = beta_vec[-length(beta_vec)]
 
 library(lpSolve)
 
-for(rho_1 in rho_vec){
-  for(rho_2 in rho_vec){
-    if(rho_1!=rho_2){
+for(beta_1 in beta_vec){
+  for(beta_2 in beta_vec){
+    if(beta_1!=beta_2){
       K = length(matList_final$Fk)
       f.obj = c(rep(0,K),1,rep(0,K),1)
       
       
       
       G_matrix_1 = calc_tilde_G_inv(M=matList_final$Ml[[1]],A=matList_final$Al[[1]],
-                                    rho=rho_1)[id_min,id_min]
+                                    beta=beta_1)[id_min,id_min]
       G_matrix_2 = calc_tilde_G_inv(M=matList_final$Ml[[1]],A=matList_final$Al[[1]],
-                                    rho=rho_2)[id_min,id_min]
+                                    beta=beta_2)[id_min,id_min]
       
       for(k in 1:K){
         diag(matList_final$Fk[[k]])=1
@@ -112,12 +111,15 @@ for(rho_1 in rho_vec){
 
 ### END: check identifiability ###
 
-fit_param(n, p, matList_final, sim_final, id_min=id_min,
+## BEGIN fit data without interaction effects ##
+fit_param(dimension, num_observations, matList_final, sim_final, id_min=id_min,
           filename_param_fit=paste(data_source,"sim_final_n195_param_fit.csv",sep=""),
           filename_ests = paste(data_source,"sim_final_n195_ests.csv",sep=""),
           filename_bic = paste(data_source,"sim_final_n195_bic.csv",sep=""))
 read.csv(paste(data_source,"sim_final_n195_param_fit.csv",sep=""))
+## END fit data without interaction effects ##
 
+## BEGIN fit data for all possible models and compute BIC ##
 this_list = list()
 this = c(0,0,0,0,0,0,0)
 for(k in (1:(2^length(this)-1))){
@@ -133,19 +135,19 @@ for(k in (1:(2^length(this)-1))){
     return(mat_list_full)
   }
   
-  combined_matList_partial_der = function(matList, link_matList, tilde_G_inv_partial_rho){
+  combined_matList_partial_der = function(matList, link_matList, tilde_G_inv_partial_beta){
     #browser()
     link_matList=c(matList$Fk,matList$Gl)
-    n = dim(link_matList[[1]])[1]
+    dimension = dim(link_matList[[1]])[1]
     matList_full = c(matList$Fk,matList$Gl)
     counter = length(matList_full)
     sequence = seq_along(matList_full)
     #calculate all possible Hadamard-products; Exclude global effect matrix
     for(i in sequence){
-      matList_full[[i]] = matrix(0,n,n) # does not depend on rho
+      matList_full[[i]] = matrix(0,dimension,dimension) # does not depend on beta
     }
     
-    matList_full[[length(matList$Fk)+1]] = tilde_G_inv_partial_rho
+    matList_full[[length(matList$Fk)+1]] = tilde_G_inv_partial_beta
     #browser()
     for(i in sequence[-length(matList$Fk)]){
       for(j in sequence[c(-(1:i),-length(matList$Fk))]){
@@ -154,11 +156,11 @@ for(k in (1:(2^length(this)-1))){
         
         # use product rule whenever tilde_G_inv is included
         if(i==(length(matList$Fk)+1)){
-          matList_full[[counter]] = tilde_G_inv_partial_rho * link_matList[[j]]
+          matList_full[[counter]] = tilde_G_inv_partial_beta * link_matList[[j]]
         } else if(j==(length(matList$Fk)+1)){
-          matList_full[[counter]] = link_matList[[i]] * tilde_G_inv_partial_rho
+          matList_full[[counter]] = link_matList[[i]] * tilde_G_inv_partial_beta
         } else{
-          matList_full[[counter]] = matrix(0,n,n)
+          matList_full[[counter]] = matrix(0,dimension,dimension)
         }
       }
     }
@@ -174,15 +176,17 @@ for(k in (1:(2^length(this)-1))){
     return(mat_list_full)
   }
   #browser()
-  this0 = fit_param(n, p, matList_final, sim_final, id_min=id_min,
+  this0 = fit_param(dimension, p, matList_final, sim_final, id_min=id_min,
                     link=combined_matList_partial,
-                    link_der_rho = combined_matList_partial_der, save=FALSE)
+                    link_der_beta = combined_matList_partial_der, save=FALSE)
   #browser()
   this_list[[k]] = this0
   print(k)
   #browser()
 }
+## END fit data for all possible models and compute BIC ##
 
+## BEGIN find model with best BIC ##
 bics = sapply(1:length(this_list),function(s) this_list[[s]][[3]])
 simple_model_bic = sort(bics)[(sort(bics)<4796.5)&(sort(bics)>4796)]
 simple_model_ix = which((sort(bics)<4796.5)&(sort(bics)>4796))
@@ -243,14 +247,14 @@ names(df) = c("0comcol","1reg", "2global", "3contig",
               "6reg and contig")
 
 # When the spatial effect is missing, we are down TWO parameters, not 1
-p=11
+num_observations=11
 sort_bics = sort(bics)[simple_sequence]
-sort_bics[is.na(df$'3contig')] = sort_bics[is.na(df$'3contig')] - log(p)
+sort_bics[is.na(df$'3contig')] = sort_bics[is.na(df$'3contig')] - log(num_observations)
 rownames(df) = round(sort_bics,1)
 write.csv(df,file=paste(data_source,"sim_final_n195_model_choice.csv",sep=""))
 
 round(df[1,],6)
-matList_final$Gl[[1]] = matrix(0,n,n)
+matList_final$Gl[[1]] = matrix(0,dimension,dimension)
 write_param(t(c(df_test[1,])),filename=paste(data_source,"sim_final_n195_combined_param_fit.csv",sep=""),
             matList = matList_final, link=combined_matList)
 round(df[rownames(df)=="0",],3)
@@ -268,19 +272,19 @@ combined_matList_partial = function(matList){
   return(mat_list_full)
 }
 
-combined_matList_partial_der = function(matList, link_matList, tilde_G_inv_partial_rho){
+combined_matList_partial_der = function(matList, link_matList, tilde_G_inv_partial_beta){
   #browser()
   link_matList=c(matList$Fk,matList$Gl)
-  n = dim(link_matList[[1]])[1]
+  dimension = dim(link_matList[[1]])[1]
   matList_full = c(matList$Fk,matList$Gl)
   counter = length(matList_full)
   sequence = seq_along(matList_full)
   #calculate all possible Hadamard-products; Exclude global effect matrix
   for(i in sequence){
-    matList_full[[i]] = matrix(0,n,n) # does not depend on rho
+    matList_full[[i]] = matrix(0,dimension,dimension) # does not depend on beta
   }
   
-  matList_full[[length(matList$Fk)+1]] = tilde_G_inv_partial_rho
+  matList_full[[length(matList$Fk)+1]] = tilde_G_inv_partial_beta
   #browser()
   for(i in sequence[-length(matList$Fk)]){
     for(j in sequence[c(-(1:i),-length(matList$Fk))]){
@@ -289,11 +293,11 @@ combined_matList_partial_der = function(matList, link_matList, tilde_G_inv_parti
       
       # use product rule whenever tilde_G_inv is included
       if(i==(length(matList$Fk)+1)){
-        matList_full[[counter]] = tilde_G_inv_partial_rho * link_matList[[j]]
+        matList_full[[counter]] = tilde_G_inv_partial_beta * link_matList[[j]]
       } else if(j==(length(matList$Fk)+1)){
-        matList_full[[counter]] = link_matList[[i]] * tilde_G_inv_partial_rho
+        matList_full[[counter]] = link_matList[[i]] * tilde_G_inv_partial_beta
       } else{
-        matList_full[[counter]] = matrix(0,n,n)
+        matList_full[[counter]] = matrix(0,dimension,dimension)
       }
     }
   }
@@ -309,19 +313,19 @@ combined_matList_partial_der = function(matList, link_matList, tilde_G_inv_parti
   return(mat_list_full)
 }
 
-fit_param(n, p, matList_final, sim_final, id_min=id_min,
+fit_param(dimension, num_observations, matList_final, sim_final, id_min=id_min,
           filename_param_fit=paste(data_source,"sim_final_n195_combined_param_fit.csv",sep=""),
           filename_ests = paste(data_source,"sim_final_n195_combined_ests.csv",sep=""),
           filename_bic = paste(data_source,"sim_final_n195_combined_bic.csv",sep=""),
           link=combined_matList_partial, 
-          link_der_rho = combined_matList_partial_der, compute_WSCE=TRUE)
+          link_der_beta = combined_matList_partial_der, compute_WSCE=TRUE)
 read.csv(paste(data_source,"sim_final_n195_combined_param_fit.csv",sep=""))
 # the WSCE was equal to the SCE
-fit_param(n, p, matList_final, sim_final, id_min=id_min,
+fit_param(dimension, num_observations, matList_final, sim_final, id_min=id_min,
           filename_param_fit=paste(data_source,"sim_final_n195_combined_param_fit.csv",sep=""),
           filename_ests = paste(data_source,"sim_final_n195_combined_ests.csv",sep=""),
           filename_bic = paste(data_source,"sim_final_n195_combined_bic.csv",sep=""),
-          link=combined_matList_partial, link_der_rho = combined_matList_partial_der)
+          link=combined_matList_partial, link_der_beta = combined_matList_partial_der)
 parm=read.csv(paste(data_source,"sim_final_n195_combined_param_fit.csv",sep=""))
 
 covMatstuff = CovMat_03(parm=as.numeric(c(as.matrix(parm))[-1]) ,matList=matList_final,id_min=id_min,link=combined_matList)
@@ -337,3 +341,4 @@ ml_combined = covMatstuff$matList_combined
 alpha_beta = covMatstuff$alpha_beta
 
 sapply(seq_along(alpha_beta), function(i) alpha_beta[i]*sum(ml_combined_supp[[i]]*ml_combined[[i]])/sum(ml_combined_supp[[i]]))
+## END find model with best BIC ##

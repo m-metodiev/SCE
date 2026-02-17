@@ -33,7 +33,7 @@ calc_Sigma_opt_frob = function(matList_full, covY, edge_constraints=c()){
   if(length(matList_full)==0){
     browser()
   }
-  n = dim(matList_full[[1]])[1]
+  dimension = dim(matList_full[[1]])[1]
   diag(covY)=0
   for(i in (1:length(matList_full))){
     diag(matList_full[[i]]) = 0

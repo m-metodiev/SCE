@@ -1,4 +1,4 @@
-sim_matList = function(n, rho, num_F, k_vec, num_G, F_0=TRUE){
+sim_matList = function(n, beta, num_F, k_vec, num_G, F_0=TRUE){
   Fk = list()
   if(F_0){
     Fk[[1]] = diag(nrow=n,ncol=n)
@@ -17,7 +17,7 @@ sim_matList = function(n, rho, num_F, k_vec, num_G, F_0=TRUE){
     M = diag(rowSums(vois))
     A = vois
     A = (diag(1/rowSums(A))%*%A)
-    Gl[[l]] = M - M%*%A*rho
+    Gl[[l]] = M - M%*%A*beta
     Ml[[l]] = M
     Al[[l]] = A
   }

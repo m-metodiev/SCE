@@ -12,6 +12,9 @@ library(viridis)
 library(ggplot2)
 library(reshape2)
 
+### Plot simulation 1 ###
+
+## BEGIN plot 1 simulation ##
 data_source = "data/"
 ESTS_NAMES = c("Pearson", "FM", "Glasso", "LW","IVE", "SCE", "WSCE")#c("Pearson","LW","Sparse","FM","hatSigma0","hatSigma","WSCE")
 COLVEC = c("brown","grey","pink","pink3","beige","orange2","darkorange2")
@@ -47,7 +50,9 @@ ggsave("atelier/sim_01_ests_musigmaunknown.jpeg", width=5.3,height=4.07,device="
 plot_heatmaps(matList2, Sigma, 
               filename="atelier/sim_01_all_matrices_plot.jpeg")
 ggsave("atelier/sim_01_all_matrices_plot.pdf", width=10.6,height=8.14)
+## END plot 1 simulation ##
 
+## BEGIN boxplots and confidence intervals ##
 # boxplot of error measures 
 sims_errors_and_bic = read.csv(file=paste(data_source,"sim_01_sims_errors_and_bic.csv",sep=""))
 
@@ -59,10 +64,10 @@ sims_params1 = sims_params[,params_1_pos]
 names(sims_params1) = PARAM1_NAMES
 
 # errors measures of the parameters
-p = 10
+num_observations = 10
 id_min = 1:nrow(Sigma)
 plot_param_sims("atelier/sim_01_param_sims.pdf",
-                sims_params1,p,Sigma,matList2,sim_01_true_param,id_min,type="Chebyshef")
+                sims_params1,num_observations,Sigma,matList2,sim_01_true_param,id_min,type="Chebyshef")
 # [1] "normal confidence intervals"
 # comcol         reg      global contig.beta 
 # 0.875       0.925       0.950       0.400 
@@ -86,10 +91,10 @@ sims_params1 = sims_params[,params_1_pos]
 names(sims_params1) = PARAM1_NAMES
 
 # errors measures of the parameters
-p = 10
+num_observations = 10
 id_min = 1:nrow(Sigma)
 plot_param_sims("atelier/sim_01_param_sims_mu_sigma_unknown.pdf",
-                sims_params1,p,Sigma,matList2,sim_01_true_param,id_min,type="Chebyshef")
+                sims_params1,num_observations,Sigma,matList2,sim_01_true_param,id_min,type="Chebyshef")
 # [1] "normal confidence intervals"
 # comcol         reg      global contig.beta 
 # 0.850       0.850       0.850       0.175 
@@ -101,3 +106,4 @@ plot_param_sims("atelier/sim_01_param_sims_mu_sigma_unknown.pdf",
 
 sims_errors_and_bic = sims_errors_and_bic[,!param_pos]
 plot_sims(sims_errors_and_bic=sims_errors_and_bic, filename="atelier/sim_01_error_measures_musigma_unknown.pdf")
+## END boxplots and confidence intervals ##

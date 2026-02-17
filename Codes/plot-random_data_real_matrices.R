@@ -26,7 +26,7 @@ theme_set(my_theme)
 
 ### Simulation 2 ###
 
-## reading in the data ##
+## BEGIN reading in the data ##
 
 source("functions/get_data_covar.R")
 
@@ -42,8 +42,9 @@ preproc_res = preproc_FITcomps_std(all_min, names_by_id, FITcomps_std, covar)
 matList_final = preproc_res$matList_final
 id_min = preproc_res$id_min
 
-## End reading the data ##
+## END reading the data ##
 
+## BEGIN plot 1 simulation ##
 matList2 = read_matList(filename = paste(data_source,"sim_02_matList.csv",sep=""))
 (sim_02_true_param = read_param(filename=paste(data_source,"sim_02_true_param.csv",sep="")))
 
@@ -68,7 +69,9 @@ ggsave("atelier/sim_02_ests_musigmaunknown.jpeg", width=5.3,height=4.07,device="
 plot_heatmaps(matList2, Sigma, 
               filename=paste(data_source,"sim_02_all_matrices_plot.jpeg",sep=""))
 ggsave("atelier/sim_02_all_matrices_plot.pdf", width=10.6,height=8.14)
+## END plot 1 simulation ##
 
+## BEGIN boxplots and confidence intervals ##
 # boxplot of error measures 
 sims_errors_and_bic = read.csv(file=paste(data_source,"sim_02_sims_errors_and_bic.csv",sep=""))
 
@@ -79,7 +82,7 @@ params_1_pos = sapply(names(sims_params), function(s) grepl("param1",s))
 sims_params1 = sims_params[,params_1_pos]
 names(sims_params1) = PARAM1_NAMES
 
-p <- 11
+num_observations <- 11
 plot_param_sims("atelier/sim_02_param_sims.pdf",
                 sims_params1,p,Sigma,matList2,sim_02_true_param,id_min,type="Chebyshef")
 # [1] "normal confidence intervals"
@@ -94,7 +97,7 @@ plot_param_sims("atelier/sim_02_param_sims.pdf",
 sims_errors_and_bic = sims_errors_and_bic[,!param_pos]
 plot_sims(sims_errors_and_bic=sims_errors_and_bic,filename="atelier/sim_02_error_measures.pdf")
 
-#mu and sigma unknown
+# mu and sigma unknown
 # boxplot of error measures 
 sims_errors_and_bic = read.csv(file=paste(data_source,"sim_02_sims_errors_and_bic_musigma_unknown.csv",sep=""))
 
@@ -106,7 +109,7 @@ sims_params1 = sims_params[,params_1_pos]
 names(sims_params1) = PARAM1_NAMES
 
 plot_param_sims("atelier/sim_02_param_sims_mu_sigma_unknown.pdf",
-                sims_params1,p,Sigma,matList2,sim_02_true_param,id_min,type="Chebyshef")
+                sims_params1,num_observations,Sigma,matList2,sim_02_true_param,id_min,type="Chebyshef")
 # [1] "normal confidence intervals"
 # comcol         reg      global contig.beta 
 # 0.875       0.825       0.500       0.925 
@@ -118,11 +121,9 @@ plot_param_sims("atelier/sim_02_param_sims_mu_sigma_unknown.pdf",
 
 sims_errors_and_bic = sims_errors_and_bic[,!param_pos]
 plot_sims(sims_errors_and_bic=sims_errors_and_bic,filename="atelier/sim_02_error_measures_musigma_unknown.pdf")
+## END boxplots and confidence intervals ##
 
-
-### End Simulation 2 ###
-
-# varying n
+## BEGIN varying num_observations ##
 my_theme <- theme_bw() +
   theme(strip.background = element_rect(fill = "white"), text = element_text(face="bold", size=12),
         axis.ticks.x=element_blank()
@@ -138,19 +139,19 @@ df$n[df$n=="65"]="065"
 
 #plot params
 # df_n14 = df[df$n=="014",which(names(df)=="comcol"):which(names(df)=="contig.rho")]
-# plots_n14=plot_param_sims(" ",df_n14,p,Sigma,matList2,sim_02_true_param,id_min,return_plots = TRUE)
+# plots_n14=plot_param_sims(" ",df_n14,num_observations,Sigma,matList2,sim_02_true_param,id_min,return_plots = TRUE)
 # 
 # df_n32 = df[df$n=="032",which(names(df)=="comcol"):which(names(df)=="contig.rho")]
-# plots_n32=plot_param_sims(" ",df_n32,p,Sigma,matList2,sim_02_true_param,id_min,return_plots = TRUE)
+# plots_n32=plot_param_sims(" ",df_n32,num_observations,Sigma,matList2,sim_02_true_param,id_min,return_plots = TRUE)
 # 
 # df_n65 = df[df$n=="065",which(names(df)=="comcol"):which(names(df)=="contig.rho")]
-# plots_n65 = plot_param_sims(" ",df_n65,p,Sigma,matList2,sim_02_true_param,id_min,return_plots = TRUE)
+# plots_n65 = plot_param_sims(" ",df_n65,num_observations,Sigma,matList2,sim_02_true_param,id_min,return_plots = TRUE)
 # 
 # df_n115 = df[df$n=="115",which(names(df)=="comcol"):which(names(df)=="contig.rho")]
-# plots_n115 = plot_param_sims(" ",df_n115,p,Sigma,matList2,sim_02_true_param,id_min,return_plots = TRUE)
+# plots_n115 = plot_param_sims(" ",df_n115,num_observations,Sigma,matList2,sim_02_true_param,id_min,return_plots = TRUE)
 # 
 # df_n195 = df[df$n=="195",which(names(df)=="comcol"):which(names(df)=="contig.rho")]
-# plots_n195 = plot_param_sims(" ",df_n195,p,Sigma,matList2,sim_02_true_param,id_min,return_plots = TRUE)
+# plots_n195 = plot_param_sims(" ",df_n195,num_observations,Sigma,matList2,sim_02_true_param,id_min,return_plots = TRUE)
 
 ###
 df_unknown=read.csv(file=paste(data_source,"sim_02_different_n_unknown.csv",sep=""),row.names=1)
@@ -174,8 +175,9 @@ plot_MAE = ggplot(df, aes(x=n, y=WSCE)) + geom_boxplot()+scale_x_discrete(labels
 
 ggsave(plot_MAE,filename="atelier/sim_02_different_n.pdf", width=7,height=2,device="pdf")
 ggsave(plot_MAE_unknown,filename="atelier/sim_02_different_n_unknown.pdf", width=7,height=2,device="pdf")
+## END varying num_observations ##
 
-# model misspecification
+## BEGIN model misspecification ##
 
 # Version 1: No missing information
 my_theme <- theme_bw() +
@@ -290,3 +292,4 @@ for(i in (1:10)){
 }
  
 ggsave(plot_without_lines+theme(text = element_text(size = 16)), file = "atelier/MAE_lambda.pdf", width = 7, height = 5)
+## END model misspecification ##

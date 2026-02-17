@@ -15,6 +15,9 @@ library(GGally)
 data_source = "data/"
 ESTS_NAMES = c("Pearson","LW","Sparse","hatSigma0","hatSigma")
 
+### Real data ###
+
+## BEGIN plot BIC values ##
 df=read.csv(file=paste(data_source,"sim_final_n195_model_choice.csv",sep=""))
 rownames(df)=df$X
 df$X=NULL
@@ -28,8 +31,9 @@ ggheatmap::ggheatmap(df) +
            fill = NA, color = 'magenta', linewidth = 1) +
   theme(axis.text.x=element_text(size=15), axis.text.y=element_text(size=16))
 ggsave("atelier/real_data_n195_modelchoice.pdf", width=16,height=10)
+## END plot BIC values ##
 
-## read data ##
+## BEGIN read data ##
 
 source("functions/get_data_covar.R")
 
@@ -46,8 +50,9 @@ matList_final = preproc_res$matList_final
 dim(matList_final$Fk[[1]])
 id_min = preproc_res$id_min
 
-## End read data ##
+## END read data ##
 
+## BEGIN scatterplot matrix ##
 Y = FITcomps_std_total[2:12,which(all_min==1)]
 Y = Y[,sapply(id_min,function(id) which(preproc_res$FITcomps_std_iso==preproc_res$iso_id_key[id]))]
 
@@ -84,8 +89,9 @@ plot_ggpairs = ggpairs(df_selected,columns=1:5,
     axis.title = element_text(size = 14)         # (Optional) axis titles
   )
 ggsave("atelier/sim_final_n195_ggpairs.pdf",plot_ggpairs, device="pdf", width=12, height=12)
-### End plot raw data ###
+### END scatterplot matrix ###
 
+## BEGIN heatmaps ##
 Sigma_base_model = as.matrix(CovMat_03(parm=as.matrix(read_param(filename=paste(data_source,"sim_final_n195_param_fit.csv",sep=""))),
                                        matList=matList_final,
                                        id_min=id_min)$Sigma)
@@ -154,3 +160,4 @@ plot_heatmaps(matList_final,
                     show_regions=TRUE,
                     names_by_id=names_by_id, id_min=id_min,
                     iso3=iso3, info_coutries=info_coutries)
+## END heatmaps ##

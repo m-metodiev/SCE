@@ -40,7 +40,7 @@ all_min = read_names$all_min
 
 preproc_res = preproc_FITcomps_std(all_min, names_by_id, FITcomps_std, covar)
 matList_final = preproc_res$matList_final
-id_min = preproc_res$id_min
+adj_positions = preproc_res$adj_positions
 
 ## END reading the data ##
 
@@ -48,21 +48,21 @@ id_min = preproc_res$id_min
 matList2 = read_matList(filename = paste(data_source,"sim_02_matList.csv",sep=""))
 (sim_02_true_param = read_param(filename=paste(data_source,"sim_02_true_param.csv",sep="")))
 
-Sigma = CovMat_03(as.matrix(sim_02_true_param), matList2, id_min=id_min)$Sigma
+Sigma = CovMat_03(as.matrix(sim_02_true_param), matList2, adj_positions=adj_positions)$Sigma
 ests = read_ests(filename=paste(data_source,"sim_02_ests.csv",sep=""))
 
 # known means and variances
 plot_cov(matList2,Sigma,
          SigmaHat_list=read_ests(filename=paste(data_source,"sim_02_ests.csv",sep="")),
          colvec=c("brown","grey","pink","pink3","beige","orange2","darkorange2"),
-         model="corY", ests_names=ESTS_NAMES,order=c(1, 2, 3, 4, 7, 5, 6))
+         model="correlation_matrix", ests_names=ESTS_NAMES,order=c(1, 2, 3, 4, 7, 5, 6))
 ggsave("atelier/sim_02_ests.jpeg", width=5.3,height=4.07,device="jpeg",dpi=700)
 
 # unknown means and variances
 plot_cov(matList2,Sigma,
          SigmaHat_list=read_ests(filename=paste(data_source,"sim_02_ests_musigma_unknown.csv",sep="")),
          colvec=c("brown","grey","pink","pink3","beige","orange2","darkorange2"),
-         model="corY", ests_names=ESTS_NAMES,order=c(1, 2, 3, 4, 7, 5, 6))
+         model="correlation_matrix", ests_names=ESTS_NAMES,order=c(1, 2, 3, 4, 7, 5, 6))
 ggsave("atelier/sim_02_ests_musigmaunknown.jpeg", width=5.3,height=4.07,device="jpeg")
 
 # heatmap of the correlation matrix
@@ -83,8 +83,8 @@ sims_params1 = sims_params[,params_1_pos]
 names(sims_params1) = PARAM1_NAMES
 
 num_observations <- 11
-plot_param_sims("atelier/sim_02_param_sims.pdf",
-                sims_params1,p,Sigma,matList2,sim_02_true_param,id_min,type="Chebyshef")
+#plot_param_sims("atelier/sim_02_param_sims.pdf",
+#                sims_params1,p,Sigma,matList2,sim_02_true_param,adj_positions,type="Chebyshef")
 # [1] "normal confidence intervals"
 # comcol         reg      global contig.beta 
 # 0.950       0.875       0.900       0.900 
@@ -97,7 +97,7 @@ plot_param_sims("atelier/sim_02_param_sims.pdf",
 sims_errors_and_bic = sims_errors_and_bic[,!param_pos]
 plot_sims(sims_errors_and_bic=sims_errors_and_bic,filename="atelier/sim_02_error_measures.pdf")
 
-# mu and sigma unknown
+# mu and sigma unknown (2step)
 # boxplot of error measures 
 sims_errors_and_bic = read.csv(file=paste(data_source,"sim_02_sims_errors_and_bic_musigma_unknown.csv",sep=""))
 
@@ -108,8 +108,8 @@ params_1_pos = sapply(names(sims_params), function(s) grepl("param1",s))
 sims_params1 = sims_params[,params_1_pos]
 names(sims_params1) = PARAM1_NAMES
 
-plot_param_sims("atelier/sim_02_param_sims_mu_sigma_unknown.pdf",
-                sims_params1,num_observations,Sigma,matList2,sim_02_true_param,id_min,type="Chebyshef")
+#plot_param_sims("atelier/sim_02_param_sims_mu_sigma_unknown.pdf",
+#                sims_params1,num_observations,Sigma,matList2,sim_02_true_param,adj_positions,type="Chebyshef")
 # [1] "normal confidence intervals"
 # comcol         reg      global contig.beta 
 # 0.875       0.825       0.500       0.925 
@@ -121,6 +121,31 @@ plot_param_sims("atelier/sim_02_param_sims_mu_sigma_unknown.pdf",
 
 sims_errors_and_bic = sims_errors_and_bic[,!param_pos]
 plot_sims(sims_errors_and_bic=sims_errors_and_bic,filename="atelier/sim_02_error_measures_musigma_unknown.pdf")
+
+# mu and sigma unknown (1step)
+# boxplot of error measures 
+sims_errors_and_bic = read.csv(file=paste(data_source,"sim_02_sims_errors_and_bic_musigma_unknown_1step.csv",sep=""))
+
+param_pos = sapply(names(sims_errors_and_bic), function(s) grepl("param",s))
+sims_params = sims_errors_and_bic[,param_pos]
+
+params_1_pos = sapply(names(sims_params), function(s) grepl("param1",s))
+sims_params1 = sims_params[,params_1_pos]
+names(sims_params1) = PARAM1_NAMES
+
+#plot_param_sims("atelier/sim_02_param_sims_mu_sigma_unknown.pdf",
+#                sims_params1,num_observations,Sigma,matList2,sim_02_true_param,adj_positions,type="Chebyshef")
+# [1] "normal confidence intervals"
+# comcol         reg      global contig.beta 
+# 0.875       0.825       0.500       0.925 
+# [1] 0.78125
+# [1] "Chebyshef confidence intervals"
+# comcol         reg      global contig.beta 
+# 0.975       0.975       0.900       1.000 
+# [1] 0.9625
+
+sims_errors_and_bic = sims_errors_and_bic[,!param_pos]
+plot_sims(sims_errors_and_bic=sims_errors_and_bic,filename="atelier/sim_02_error_measures_musigma_unknown_1step.pdf")
 ## END boxplots and confidence intervals ##
 
 ## BEGIN varying num_observations ##
@@ -139,19 +164,19 @@ df$n[df$n=="65"]="065"
 
 #plot params
 # df_n14 = df[df$n=="014",which(names(df)=="comcol"):which(names(df)=="contig.rho")]
-# plots_n14=plot_param_sims(" ",df_n14,num_observations,Sigma,matList2,sim_02_true_param,id_min,return_plots = TRUE)
+# plots_n14=plot_param_sims(" ",df_n14,num_observations,Sigma,matList2,sim_02_true_param,adj_positions,return_plots = TRUE)
 # 
 # df_n32 = df[df$n=="032",which(names(df)=="comcol"):which(names(df)=="contig.rho")]
-# plots_n32=plot_param_sims(" ",df_n32,num_observations,Sigma,matList2,sim_02_true_param,id_min,return_plots = TRUE)
+# plots_n32=plot_param_sims(" ",df_n32,num_observations,Sigma,matList2,sim_02_true_param,adj_positions,return_plots = TRUE)
 # 
 # df_n65 = df[df$n=="065",which(names(df)=="comcol"):which(names(df)=="contig.rho")]
-# plots_n65 = plot_param_sims(" ",df_n65,num_observations,Sigma,matList2,sim_02_true_param,id_min,return_plots = TRUE)
+# plots_n65 = plot_param_sims(" ",df_n65,num_observations,Sigma,matList2,sim_02_true_param,adj_positions,return_plots = TRUE)
 # 
 # df_n115 = df[df$n=="115",which(names(df)=="comcol"):which(names(df)=="contig.rho")]
-# plots_n115 = plot_param_sims(" ",df_n115,num_observations,Sigma,matList2,sim_02_true_param,id_min,return_plots = TRUE)
+# plots_n115 = plot_param_sims(" ",df_n115,num_observations,Sigma,matList2,sim_02_true_param,adj_positions,return_plots = TRUE)
 # 
 # df_n195 = df[df$n=="195",which(names(df)=="comcol"):which(names(df)=="contig.rho")]
-# plots_n195 = plot_param_sims(" ",df_n195,num_observations,Sigma,matList2,sim_02_true_param,id_min,return_plots = TRUE)
+# plots_n195 = plot_param_sims(" ",df_n195,num_observations,Sigma,matList2,sim_02_true_param,adj_positions,return_plots = TRUE)
 
 ###
 df_unknown=read.csv(file=paste(data_source,"sim_02_different_n_unknown.csv",sep=""),row.names=1)
@@ -255,7 +280,7 @@ df[(df$estimator=="ZZWSCE"),]$estimator = "ZAWSCE"
 df[(df$estimator=="ZSCE"),]$estimator = "ZCSCE"
 df[(df$estimator=="ZIVE"),]$estimator = "ZBIVE"
 
-plot_without_lines = ggplot(df, aes(x=lambda, y=MAE, fill=estimator)) + geom_boxplot(coef = 6)
+plot_without_lines = ggplot(df, aes(x=lambda, y=MAE, fill=estimator)) + geom_boxplot(color = "grey10",linewidth = .3,outlier.shape = NA)
 for(i in (1:10)){
   plot_without_lines = plot_without_lines + geom_vline(xintercept = i+.5)
 }
@@ -279,7 +304,7 @@ df_full=rbind(df,df_1)
 
 plot_without_lines <- df_full %>% 
    filter(est!="new"  & type =="MAE") %>% 
-   ggplot( aes(x=lambda, y=value, fill=estimator)) + geom_boxplot(coef = 6) +
+   ggplot( aes(x=lambda, y=value, fill=estimator)) + geom_boxplot(color = "grey10",linewidth = .3,outlier.shape = NA) +
    facet_grid(full~.)+
    scale_fill_manual(values = c("brown","grey","pink","pink3","darkorange2","beige","orange2"),
                      labels =  expression("Pearson","FM","Glasso","LW","IVE","SCE","WSCE"),

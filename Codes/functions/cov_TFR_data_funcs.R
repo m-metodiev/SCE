@@ -1,14 +1,13 @@
-write_param = function(param_fit1,filename, matList,
-                       link=function(matList) c(matList$Fk,matList$Gl)){
+write_param = function(param_fit1,filename, matList, interaction_effects=list()){
   #browser()
   param_fit_csv = as.data.frame(t(c(param_fit1)))
   rownames(param_fit_csv) = "param"
-  if(length(link(matList))==4){
-    colnames(param_fit_csv) = c("comcol","reg", "global", "contig beta", "contig rho")
+  if(length(combined_matList(matList,interaction_effects=interaction_effects)$matList_full)==4){
+    colnames(param_fit_csv) = c("comcol","reg", "global", "contig beta", "contig beta")
   } else{
-    colnames(param_fit_csv) = c("comcol","reg", "global", "contig beta", 
-                                "comcol and reg", "comcol and config", 
-                                "reg and config" ,"contig rho")
+    colnames(param_fit_csv) = c("comcol","reg", "global", "contig beta",
+                                "comcol and reg", "comcol and config",
+                                "reg and config" ,"contig beta")
   }
   write.csv(param_fit_csv, file=filename)
 }
@@ -24,8 +23,8 @@ write_matList = function(matList,filename){
   for(i in seq_along(res[1,])){
     s = dim(matList$Al[[1]])[1]
     mat_i = as.matrix(c(matList$Ml,matList$Al,matList$Fk)[[i]])
-    n = dim(mat_i)[1]
-    res[,i][1:(n*n)] = c(mat_i)
+    dimension = dim(mat_i)[1]
+    res[,i][1:(dimension*dimension)] = c(mat_i)
   }
   write.csv(as.data.frame(res), file=filename)
 }
@@ -37,24 +36,23 @@ read_matList = function(filename){
                  Ml=list(matrix(full_matrix[,1],s,s)),
                  Al=list(matrix(full_matrix[,2],s,s)))
   for(i in 3:dim(full_matrix)[2]){
-    n = round(sqrt(sum(!is.na(full_matrix[,i]))))
-    matList$Fk[[i-2]] = matrix(full_matrix[1:(n*n),i],n,n)
+    dimension = round(sqrt(sum(!is.na(full_matrix[,i]))))
+    matList$Fk[[i-2]] = matrix(full_matrix[1:(dimension*dimension),i],dimension,dimension)
   }
   return(matList)
 }
 read_ests = function(filename){
   full_matrix = as.matrix(read.csv(file=filename))
   full_matrix = full_matrix[,2:dim(full_matrix)[2]]
-  n = round(sqrt(length(full_matrix[,1])))
+  dimension = round(sqrt(length(full_matrix[,1])))
   ests = list()
   for(i in (1:dim(full_matrix)[2])){
-    ests[[i]] = matrix(full_matrix[,i],n,n)
+    ests[[i]] = matrix(full_matrix[,i],dimension,dimension)
   }
   return(ests)
 }
 write_summary_measures = function(filename_ests,filename_error_measures,
-                                  has_missingvalues=FALSE,
-                                  p_is_one=FALSE,Sigma){
+                                  has_missingvalues=FALSE,Sigma){
   ests = read_ests(filename_ests)
   summary_measures = as.data.frame(sapply(1:length(ests),
                                           function(i) c(mean(abs(ests[[i]]-Sigma)),
@@ -92,10 +90,10 @@ read_names_FITcomps_std_total = function(FITcomps_std_total, covar, model="no_mi
 read_plot_FITcomps_std = function(filename){
   
   #Finding the matrices and epsilon
-  n = 196
-  p = 12 # will be p=11 later, because the first time interval is all missing values
-  counter = matrix(0,nrow=p,ncol=n)
-  FITcomps_std_total = matrix(0,nrow=p,ncol=n)
+  dimension = 196
+  num_observations = 12 # will be 11 later, because the first time interval is all missing values
+  counter = matrix(0,nrow=num_observations,ncol=dimension)
+  FITcomps_std_total = matrix(0,nrow=num_observations,ncol=dimension)
   #browser()
   
   n_cores=detectCores()
@@ -142,23 +140,23 @@ preproc_FITcomps_std = function(all_min, names_by_id, FITcomps_std, covar){
     iso_id_key[covar$id_row[i]] = covar$iso_d[i]
   }
   
-  id_min = numeric(length(FITcomps_std_iso))
+  adj_positions = numeric(length(FITcomps_std_iso))
   for(i in seq_along(FITcomps_std_iso)){
-    id_min[i] = which(iso_id_key==FITcomps_std_iso[i])
+    adj_positions[i] = which(iso_id_key==FITcomps_std_iso[i])
   }
   
-  names_by_id[id_min]
+  names_by_id[adj_positions]
   
   
-  n = dim(Gb)[1]
-  p = 12
+  dimension = dim(Gb)[1]
+  num_observations = 12
   
   for(Fk in list(Gb,Gc)){
     cut_node = c()
-    degree_Fk = rowSums(Fk*(diag(n)==0))
-    for(i in (1:n)){
+    degree_Fk = rowSums(Fk*(diag(dimension)==0))
+    for(i in (1:dimension)){
       counter=c()
-      for(j in which((Fk*(diag(n)==0))[i,] == 1)){
+      for(j in which((Fk*(diag(dimension)==0))[i,] == 1)){
         if(degree_Fk[i] != degree_Fk[j]){
           counter=c(counter,j)
         }
@@ -171,27 +169,27 @@ preproc_FITcomps_std = function(all_min, names_by_id, FITcomps_std, covar){
     }
     #browser()
     for(c_n in cut_node){
-      id_min = id_min[which(id_min!=c_n)]
+      adj_positions = adj_positions[which(adj_positions!=c_n)]
     } # remove cut-nodes
   }
   Fk = list()
-  Fk[[1]] = Gb[id_min,id_min]
+  Fk[[1]] = Gb[adj_positions,adj_positions]
   diag(Gb)=1
-  Fk[[2]] = Gc[id_min,id_min]
-  Fk[[3]] = Gd[id_min,id_min]
+  Fk[[2]] = Gc[adj_positions,adj_positions]
+  Fk[[3]] = Gd[adj_positions,adj_positions]
   
   Gl = list()
   Ml = list()
   Al = list()
-  A <- sparseMatrix(i = covar$id_row, j = covar$id_col, x = covar$contig)
+  vois <- sparseMatrix(i = covar$id_row, j = covar$id_col, x = covar$contig)
   
   
-  M = diag(rowSums(A))
-  A = (diag(1/rowSums(A))%*%A)
+  M = diag(rowSums(vois))
+  A = (diag(1/rowSums(vois))%*%vois)
   Gl[[1]] = matrix(0,ncol=196,nrow=196)
   Ml[[1]] = M
   Al[[1]] = A
   
-  matList_final = list(Fk=Fk,Gl=Gl,Ml=Ml,Al=Al)
-  return(list(matList_final=matList_final,id_min=id_min,iso_id_key=iso_id_key,FITcomps_std_iso=FITcomps_std_iso))
+  matList_final = list(Fk=Fk,Gl=Gl,Ml=Ml,Al=Al,vois=vois)
+  return(list(matList_final=matList_final,adj_positions=adj_positions,iso_id_key=iso_id_key,FITcomps_std_iso=FITcomps_std_iso))
 }

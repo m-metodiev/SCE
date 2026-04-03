@@ -7,98 +7,170 @@ PACKAGES_PARALLEL = c("foreach",
 PACKAGES = c(PACKAGES_MISC, PACKAGES_STAT_OPTIM, 
              PACKAGES_PARALLEL) # all of the stuff
 lapply(PACKAGES, require, character.only = TRUE)
+library(scov)
 
-fit_param = function(dimension, num_observations, matList, sim, id_min,
+# if not positive semidefinite, the matrix is mapped to the
+# positive definite matrix closest to it by using nearPD
+fit_param = function(dimension, num_observations, matList, sim, adj_positions,
                      filename_param_fit=NULL, filename_ests=NULL, filename_bic=NULL, 
                      filename_error_measures=NULL,
-                     num_grid_sim = 100, ncores=8,
+                     grid_size = 100, ncores=5,
                      save=TRUE,Sigma=NULL,
-                     link=function(matList) c(matList$Fk,matList$Gl), 
-                     link_der_beta=link_der_simple,
+                     #link=function(matList) list(matList_full=c(matList$Fk,matList$Gl)), 
+                     #link_der_beta=link_der_simple,
                      normalize_data=FALSE, compute_WSCE=FALSE,
-                     simple=FALSE, init=NULL){
+                     simple=FALSE, init=NULL, adj_matrix=NULL,
+                     interaction_effects=list(),
+                     num_bootstrap_iters=100,
+                     parallelize = TRUE,
+                     joint_estimation = FALSE,
+                     already_demeaned = FALSE){
+
+  if(is.null(adj_matrix)&(!is.null(matList$vois))){
+    Ml_Al = get_M_A(adj_matrix=matList$vois)
+    matList$Ml = Ml_Al$Ml
+    matList$Al = Ml_Al$Al
+    matList$Gl = NULL
+  }
   
   matList$Gl[[1]] = matrix(0,dimension,dimension) # Just a dummy-variable, will be declared later
   num_observations_is_one=FALSE
   if(num_observations==1){
-    sim$Y = t(matrix(sim$Y))
+    sim$dataset = t(matrix(sim$dataset))
     num_observations_is_one=TRUE
   } # code is slightly different if num_observations==1
 
   # the SCE needs to be computed on the normalized dataset
-  if(normalize_data){
-    simY_normalized = (sim$Y - t(matrix(rep(colMeans(sim$Y),num_observations),ncol=num_observations)))%*%diag(1/apply(sim$Y,2,sd))
-    sim$corY=cor(sim$Y)
+  if(sum(is.na(sim$dataset))==0){
+    if(normalize_data){
+      mean_estim = colMeans(sim$dataset)
+      sd_estim = apply(sim$dataset,2,sd)
+      sim$correlation_matrix=cor(sim$dataset)
+    } else{
+      #simY_normalized = sim$Y
+      if(!already_demeaned){
+        mean_estim = rep(2.1,dimension)
+      } else{
+        mean_estim = rep(0,dimension)
+      }
+      
+      sd_estim = rep(1,dimension)
+      sim$correlation_matrix = cor_from_standard_errors(sim$dataset)
+    }
+    dataset_normalized = (sim$dataset - t(matrix(rep(mean_estim,num_observations),ncol=num_observations)))%*%diag(1/sd_estim)
   } else{
-    simY_normalized = sim$Y
+    # we do not (so far) simulate the case where the data is missing and
+    # the mean and sd are unknown, so we assume that they are known
+    if(!already_demeaned){
+      mean_estim = rep(2.1,dimension)
+    } else{
+      mean_estim = rep(0,dimension)
+    }
+    sd_estim = rep(1,dimension)
+    dataset_normalized = sim$dataset
   }
   # for the real dataset, we know that the standardized errors are 
   # already normalized, so we don't need to do that again
+
   if(is.null(init)){
-    init = fit_init(id_min,matList = matList, corY=sim$corY,
-                    num_grid_sim=num_grid_sim, ncores=ncores,
-                    link=link)
+    ive_estim = scov(pairwise_covariate_matrices = matList$Fk,
+                     adj_matrix = matList$vois,
+                     dataset = sim$dataset,
+                     mean_estim = mean_estim, sd_estim = sd_estim,
+                     grid_size = grid_size, ncores = ncores,
+                     adj_positions=adj_positions,
+                     interaction_effects=interaction_effects,
+                     parallelize = parallelize,
+                     semiparametric = TRUE)
+    init = ive_estim$parm
   }
-
-  exp_param_optim_frob = exp(init)
-  Sigma_0_optim_frob = CovMat_03(parm=exp_param_optim_frob, matList,id_min=id_min)$Sigma
-
-  list2env(fit_cov(id_min, num_observations,
-                      matList,
-                      forward_transform_param(exp(init)),
-                      as.matrix(simY_normalized),
-                        link=link,link_der_beta=link_der_beta), envir = .GlobalEnv)
-
-  if(sum(is.na(sim$Y))>0){
+  
+  Sigma_0_optim_frob = ive_estim$corrmat_estim
+  #Sigma_0_optim_frob = CovMat_03(parm=init, matList,
+  #                               adj_positions=adj_positions,
+  #                               interaction_effects = interaction_effects)$Sigma
+  sce_estim = scov(pairwise_covariate_matrices=matList$Fk,
+                   adj_matrix = matList$vois,
+                   dataset = sim$dataset,
+                   mean_estim = mean_estim, sd_estim = sd_estim,
+                   grid_size = grid_size, ncores = ncores,
+                   adj_positions = adj_positions,
+                   init = init,
+                   interaction_effects=interaction_effects,
+                   parallelize = parallelize,
+                   semiparametric = FALSE,
+                   misspecification = FALSE,
+                   joint_estimation=joint_estimation)
+  
+  SigmaHat1 = sce_estim$corrmat_estim
+  param_fit1 = sce_estim$parm
+  bic = sce_estim$bic
+  avg_effects = sce_estim$average_effects
+  
+  if(sum(is.na(sim$dataset))>0){
     has_missingvalues=TRUE
-    Y_nonmissing = imputePCA(sim$Y,ncp=length(init))$completeObs
+    dataset_nonmissing = imputePCA(sim$dataset,ncp=length(init))$completeObs
   } else{
     has_missingvalues=FALSE
-    Y_nonmissing = sim$Y
+    dataset_nonmissing = sim$dataset
   }
   
   if((num_observations>1) & (!simple)){
-    ests = list(as.matrix(cor(Y_nonmissing)),
-                cov2cor(covFactorModel::covFactorModel(xts(x=Y_nonmissing, order.by=Sys.Date()-1:num_observations),K=length(init))),
-                cov2cor(CVglasso(X=Y_nonmissing)$Sigma),
-                cov2cor(linearShrinkLWEst(Y_nonmissing)),
+    ests = list(as.matrix(cor(dataset_nonmissing)),
+                cov2cor(covFactorModel::covFactorModel(xts(x=dataset_nonmissing, order.by=Sys.Date()-1:num_observations),K=length(init))),
+                cov2cor(CVglasso(X=dataset_nonmissing)$Sigma),
+                cov2cor(linearShrinkLWEst(dataset_nonmissing)),
                 as.matrix(Sigma_0_optim_frob),
                 as.matrix(SigmaHat1))
     
     if(compute_WSCE){
       if(normalize_data){
-        pearson_mat = cor(sim$Y) # mean and variance unknown
+        pearson_mat = cor(sim$dataset) # mean and variance unknown
         use_bootstrap = TRUE
       } else{
-        pearson_mat = cor_from_standard_errors(Y_nonmissing) # mean and variance known
+        if(!already_demeaned){
+          pearson_mat = cor_from_standard_errors(dataset_nonmissing - 2.1)
+        } else{
+          pearson_mat = cor_from_standard_errors(dataset_nonmissing)
+        }
+        # mean and variance known
         use_bootstrap = FALSE # used anyway if part of the data is missing
       }
-      lambda = compute_lambda_opt(id_min,parm=param_fit1,matList=matList,
-                                  link=link,link_der_beta=link_der_beta,Y=sim$Y,
-                                  pearson_mat=pearson_mat,SCE_mat=as.matrix(SigmaHat1),
-                                  Y_nonmissing=Y_nonmissing, use_bootstrap=use_bootstrap)
+      wsce_estim = scov(pairwise_covariate_matrices=matList$Fk,
+                        adj_matrix=matList$vois,
+                        dataset=sim$dataset,
+                        mean_estim = mean_estim, sd_estim = sd_estim,
+                        grid_size=grid_size, parallelize = parallelize, 
+                        ncores=ncores, adj_positions = adj_positions,
+                        interaction_effects = interaction_effects,
+                        init = init,
+                        use_bootstrap=use_bootstrap,
+                        num_bootstrap_iters=num_bootstrap_iters,
+                        semiparametric=FALSE,
+                        misspecification=TRUE,
+                        joint_estimation=joint_estimation)
+      
+      lambda = wsce_estim$lambda
       print("lambda")
       print(lambda)
-      ests = c(ests, list(lambda*as.matrix(SigmaHat1)+(1-lambda)*as.matrix(cor(Y_nonmissing))))
+      ests = c(ests, list(wsce_estim$corrmat_estim))
     }
   } else{
     ests = list(as.matrix(Sigma_0_optim_frob),as.matrix(SigmaHat1))
   } # If num_observations=1, most estimators cant be computed  
-
-  #browser()
   
   if(save==TRUE){
     if(length(param_fit1)==7){
       param_fit1=c(param_fit1[1:4],0,param_fit1[5:7])
     }
     write_param(t(c(param_fit1)),filename=filename_param_fit,
-                matList = matList, link=link)
+                matList = matList, interaction_effects=interaction_effects)
     write.csv(sapply(seq_along(ests),function(s) ests[[s]]),file=filename_ests)
     write.csv(as.data.frame(bic),file=filename_bic)
     if(!is.null(filename_error_measures)){
       write_summary_measures(filename_ests = filename_ests, 
                              filename_error_measures = filename_error_measures,
-                             num_observations_is_one=num_observations_is_one,Sigma=Sigma)
+                             Sigma=Sigma)
     }
   } else{
     if(!is.null(filename_error_measures)){
@@ -111,161 +183,35 @@ fit_param = function(dimension, num_observations, matList, sim, id_min,
         return(list(summary_measures, bic, ests, param_fit1))
       }
     } else{ # error measures aren't necessarily always available
-      return(list(t(c(param_fit1)), ests, bic))
+      return(list(t(c(param_fit1)), ests, bic, avg_effects))
     }
   }
-  #browser()
+  # 
   
 }
 
-fit_init = function(id_min, matList, corY,
-                    num_grid_sim = 100, ncores=8,
-                    link=function(matList) c(matList$Fk,matList$Gl)){
-
-  dimension = dim(matList$Fk[[1]])[1]
-  s = dim(matList$Al[[1]])[1]
-  #Need grid-search for beta because the norm is not quadratic w.r.t. beta
-  beta=1.5
-  xi = (1:(num_grid_sim+1))/(num_grid_sim+1)
-  #tan-hyperbolic-spaced grid because beta approaches 1
-  beta_vec = (1-tanh(beta*(1+xi))/tanh(beta))/(min((1-tanh(beta*(1+xi))/tanh(beta))))
-  beta_vec = beta_vec[-length(beta_vec)]
+#' Computes non-positive-semidefinite approximation of correlation matrix
+#'
+#' @param dataset n x d matrix (n = number of observations, d = dimension)
+#'
+#' @returns non-positive-semidefinite approximation of correlation matrix
+#' @keywords internal
+compute_marginal_cor = function(dataset){
+  dimension = ncol(dataset)
+  correlation_matrix = matrix(ncol=dimension,nrow=dimension)
   
-  is_on_edge = TRUE # solution can lie on the edge of the parameter space
-  edge_constraints = list() # params which lie on the edge will be adjusted in constraints
-  
-  counter = 0
-  while(is_on_edge){
-    counter = counter + 1
-    grid_search = function(beta){
-      matList$Gl[[1]] = calc_tilde_G_inv(M=matList$Ml[[1]],A=matList$Al[[1]],beta=beta,
-                                         U_full=matList$U_full, solve_U_full=matList$solve_U_full,
-                                         solve_M_no_islands=matList$solve_M_no_islands,
-                                         eigen_real=matList$eigen_real)[id_min,id_min]
-      matList_full = link(matList)
-      res = calc_Sigma_opt_frob(matList_full, corY, 
-                                edge_constraints=edge_constraints)
-      return(list(value=res$value,init=res$init))
-    }
-
-    test0=grid_search(beta_vec[1])
-    test1=grid_search(beta_vec[num_grid_sim])
-    # parallelize process
-    cores=detectCores()
-    cl <- makeCluster(min(cores[1]-1,ncores)) # to not overload your computer
-    registerDoParallel(cl)
-    this <- foreach(i=1:length(beta_vec), .combine=cbind, 
-                    .packages=PACKAGES, 
-                    .export=c(names(as.list(.GlobalEnv)),ls())) %dopar% {
-      grid_search(beta_vec[i])
-    }
-    stopCluster(cl)
-    
-    res = sapply((1:num_grid_sim), function(s) this[,s]$value)
-    
-    par(mfrow = c(1, 1))
-    plot(res,type="l",ylab="Translated Frob. norm",xlab="i")
-
-    init <- c(this[,which.min(res)]$init,log(beta_vec[which.min(res)]))
-    
-    null_vec = which(round(c(1-sum(exp(init)[1:(length(exp(init))-1)]),
-                             exp(init)[1:(length(exp(init))-1)]),15)<=0)
-    if(length(null_vec)>0){
-      matList$Gl[[1]] = calc_tilde_G_inv(matList$Ml[[1]],matList$Al[[1]],
-                                         exp(init)[length(init)])[id_min,id_min]
-      matList_full = link(matList)
-      matList_full_extended = c(list(matrix(0,dimension,dimension)),matList_full)
-      for(mat in matList_full_extended){
-        diag(mat)=0
-      }
-      
-      one_vec = (1:length(init))[-unique(c(1,null_vec))]#the null matrix can never be a target,
-      # since its correlation is always 0
-      
-      ## choose vector pair with smallest distance in supports ##
-      dist_matrix = sapply(null_vec, 
-                           function(s) sapply(one_vec,
-                                function(t) mat_support_distance(matList_full_extended[[s]],
-                                                                 matList_full_extended[[t]])))
-
-      if(is.vector(dist_matrix)){
-        # if there is only one option, choose the one
-        min_vec = sapply(seq_along(null_vec), function(s) which.min(dist_matrix[s]))
-        arg_min1 = which.min(sapply(seq_along(null_vec), function(s) dist_matrix[s]))
-        arg_min2 = 1
-      } else{
-        min_vec = sapply(seq_along(null_vec), function(s) which.min(dist_matrix[,s]))
-        arg_min1 = which.min(sapply(seq_along(null_vec), function(s) dist_matrix[min_vec[s],s]))
-        arg_min2 = min_vec[arg_min1]
-      }
-      r_min = null_vec[arg_min1]-1 # b chosen for the constraint of the form b>a/K
-      s_min = one_vec[arg_min2]-1 # a chosen for the constraint of the form b>a/K
-      constraint_digit = ((exp(init)[-length(init)])[s_min])*
-        mean(matList_full_extended[[s_min+1]][matList_full_extended[[s_min+1]]>0])/(length(matList_full)+1)
-      # K chosen for the constraint of the form b>a/K
-      
-      # In the case that ALL of the values are 0
-      if(length(one_vec)==0){
-        s_min=0
-        r_min=1
-        constraint_digit = 1e-15
-      }
-      
-      edge_constraints[[counter]] = list(r_min=r_min, s_min=s_min, 
-                                         constraint_digit=max(constraint_digit,1e-15))
-      ## End: choose vector pair with smallest distance in supports ##
-    } else{
-      is_on_edge = FALSE
+  #use pairwise correlation estimates
+  for(i in (1:dimension)){
+    for(j in (i:dimension)){
+      dataseti_notmissing = !is.na(dataset[,i])
+      datasetj_notmissing = !is.na(dataset[,j])
+      correlation_matrix_ij = cor(dataset[dataseti_notmissing&
+                                            datasetj_notmissing,i],
+                                  dataset[dataseti_notmissing&
+                                            datasetj_notmissing,j])
+      correlation_matrix[i,j] = correlation_matrix_ij
+      correlation_matrix[j,i] = correlation_matrix_ij
     }
   }
-  return(init)
-}
-
-#' Title
-#'
-#' @param id_min 
-#' @param num_observations 
-#' @param matList 
-#' @param init 
-#' @param Y 
-#' @param link 
-#' @param link_der_beta 
-#'
-#' @return
-#' @export
-#'
-#' @examples
-fit_cov = function(id_min, num_observations, matList, init, Y=NULL,
-                   link=function(matList) c(matList$Fk,matList$Gl),
-                   link_der_beta=link_der_simple){
-
-  n = dim(matList$Fk[[1]])[1]
-  LogLikLogParm = function(x) LogLikLogParm_02(id_min=id_min, logParm=x, matList=matList, Y=Y, link=link)
-  GradLogLikLogParm = function(x) GradLogLikLogParm_02(id_min=id_min, logParm=x, matList=matList, Y=Y, link=link, link_der_beta=link_der_beta)
-
-  logLikInit <- LogLikLogParm(init)
-
-  fit3 <- try(optim(par=init, fn=LogLikLogParm, gr=GradLogLikLogParm, control=list(fnscale=-1, trace=1,maxit=500), method='BFGS'))
-  if(!is.character(fit3[1])){
-    SigmaHat3 <- CovMat_03(id_min=id_min,parm=backward_transform_param(fit3$par), matList=matList, link=link)$Sigma
-    param_fit3 = backward_transform_param(fit3$par)
-  } else{
-    SigmaHat3 = NULL
-    param_fit3 = NULL
-  }
-  # fit3 <- try(optim(init, fn=LogLikLogParm, control=list(fnscale=-1, trace=1), method='BFGS'))
-  # if(!is.character(fit3[1])){
-  #   SigmaHat3 <- CovMat_03(id_min=id_min, parm=backward_transform_param(fit3$par), matList=matList, link=link)$Sigma
-  #   param_fit3 = backward_transform_param(fit3$par)
-  # } else{
-  #   SigmaHat3 = NULL
-  #   param_fit3 = NULL
-  # }
-  print("INIT:")
-  print(backward_transform_param(init))
-  bic = -2*true_LogLikParm_02(id_min, param_fit3, matList, Y, link=link) + length(init)*log(dim(Y)[1])
-
-  return(list(SigmaHat1=SigmaHat3,
-              param_fit1=param_fit3,
-              bic=bic))
+  return(correlation_matrix)
 }

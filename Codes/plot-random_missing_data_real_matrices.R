@@ -35,7 +35,7 @@ all_min = read_names$all_min
 preproc_res = preproc_FITcomps_std(all_min, names_by_id, FITcomps_std, covar)
 matList_final = preproc_res$matList_final
 dim(matList_final$Fk[[1]])
-id_min = preproc_res$id_min
+adj_positions = preproc_res$adj_positions
 
 # Parms
 n <- 195; p <- 11; rho = .35
@@ -45,14 +45,14 @@ matList2 = matList_final#sim_matList(n,rho=rho,num_F=2,k_vec=c(3,10),num_G=1,F_0
 
 parm = c(.05,0.09,.11,.74,rho)
 
-test = calc_tilde_G_inv(matList2$Ml[[1]],matList2$Al[[1]],rho)[id_min,id_min]
-diag(test)=0
-max(test)*.74#maximum neighbor effect around .26
-G_inv = calc_tilde_G_inv(matList2$Ml[[1]],matList2$Al[[1]],rho)[id_min,id_min]
-A = matList2$Al[[1]][id_min,id_min]
-A[is.na(A)] = 0 # since islands can return NA-values
+#test = calc_tilde_G_inv(matList2$Ml[[1]],matList2$Al[[1]],rho)[adj_positions,adj_positions]
+#diag(test)=0
+#max(test)*.74#maximum neighbor effect around .26
+#G_inv = calc_tilde_G_inv(matList2$Ml[[1]],matList2$Al[[1]],rho)[adj_positions,adj_positions]
+#A = matList2$Al[[1]][adj_positions,adj_positions]
+#A[is.na(A)] = 0 # since islands can return NA-values
 
-covMat <- CovMat_03(parm, matList2,id_min=id_min)
+covMat <- CovMat_03(parm, matList2,adj_positions=adj_positions)
 Sigma <- covMat$Sigma#cov2cor(covMat$Sigma)
 sim2 = sim_cov(p, as.matrix(Sigma))
 
@@ -68,7 +68,7 @@ theme_set(my_theme)
 plot_cov(matList2,Sigma,
          SigmaHat_list=read_ests(filename=paste(data_source,"sim_03_ests.csv",sep="")),
          colvec=c("brown","grey","pink","pink3","beige","orange2","darkorange2"),
-         model="corY", ests_names=ESTS_NAMES,order=c(1, 2, 3, 4, 7, 5, 6))
+         model="correlation_matrix", ests_names=ESTS_NAMES,order=c(1, 2, 3, 4, 7, 5, 6))
 ggsave("atelier/sim_03_ests.jpeg", width=5.3,height=4.07,device="jpeg",,dpi=700)
 ## END plot 1 simulation ##
 
@@ -76,7 +76,7 @@ ggsave("atelier/sim_03_ests.jpeg", width=5.3,height=4.07,device="jpeg",,dpi=700)
 matList3 = read_matList(filename = paste(data_source,"sim_02_matList.csv",sep=""))
 (sim_03_true_param = read_param(filename=paste(data_source,"sim_02_true_param.csv",sep="")))
 
-Sigma = CovMat_03(as.matrix(sim_03_true_param), matList2, id_min=id_min)$Sigma
+Sigma = CovMat_03(as.matrix(sim_03_true_param), matList2, adj_positions=adj_positions)$Sigma
 ests = read_ests(filename=paste(data_source,"sim_03_ests.csv",sep=""))
 
 sims_errors_and_bic = read.csv(file=paste(data_source,"sim_03_sims_errors_and_bic.csv",sep=""))
@@ -89,8 +89,8 @@ sims_params1 = sims_params[,params_1_pos]
 names(sims_params1) = PARAM1_NAMES
 library(reshape2)
  
-plot_param_sims("atelier/sim_03_param_sims.pdf",
-                sims_params1,p,Sigma,matList2,sim_03_true_param,id_min)
+#plot_param_sims("atelier/sim_03_param_sims.pdf",
+ #               sims_params1,p,Sigma,matList2,sim_03_true_param,adj_positions)
 # [1] "normal confidence intervals"
 # comcol         reg      global contig.beta 
 # 0.925       0.775       0.875       0.875 

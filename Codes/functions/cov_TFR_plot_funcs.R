@@ -3,7 +3,7 @@ PACKAGES_VIS = c("UpSetR", "ggplot2", "grid", "plyr", "ggheatmap",
 PACKAGES = c(PACKAGES_VIS) # all of the stuff
 lapply(PACKAGES, require, character.only = TRUE)
 
-plot_cov = function(matList,Sigma,SigmaHat_list,colvec,model="corY",
+plot_cov = function(matList,Sigma,SigmaHat_list,colvec,model="correlation_matrix",
                     ests_names=NULL, order=1:length(ests_names)){
   
   covY = SigmaHat_list[[1]]
@@ -37,34 +37,34 @@ plot_cov = function(matList,Sigma,SigmaHat_list,colvec,model="corY",
   plot1 + geom_line(aes(x=Sigma2,y=Sigma2),colour="black",linetype="solid", linewidth=.8)+ylab("correlation")
 }
 
-plot_cov_simple = function(id_min, matList, parm,corY,SigmaHat){
+plot_cov_simple = function(adj_positions, matList, parm,correlation_matrix,SigmaHat){
   matList_final = matList
   transformed_parm_01=sapply(1:length(c(parm)),function(i) c(parm)[[i]]) 
   SigmaHat1=SigmaHat
   
-  diag(corY)=NA
-  plot(corY,SigmaHat1)
+  diag(correlation_matrix)=NA
+  plot(correlation_matrix,SigmaHat1)
   abline(h=transformed_parm_01[3],col="gold")
   abline(h=transformed_parm_01[2]+transformed_parm_01[3],col="green")
   
-  rho = transformed_parm_01[5]
-  mean_neighbor_effect = transformed_parm_01[6]#calc_mean_neighbor_effect(matList, rho, id_min)
+  beta = transformed_parm_01[5]
+  mean_neighbor_effect = transformed_parm_01[6]#calc_mean_neighbor_effect(matList, beta, adj_positions)
   
   abline(h=mean_neighbor_effect+transformed_parm_01[2]+transformed_parm_01[3],col="purple")
   abline(h=mean_neighbor_effect+transformed_parm_01[2]+transformed_parm_01[3]+transformed_parm_01[1],col="red")
 }
 
 plot_param = function(matList, filename_true_param=NULL, filename_param_fit,
-                      id_min = 1:dim(matList$Al[[1]])[1],error=TRUE,version="upsetplot"){
+                      adj_positions = 1:dim(matList$Al[[1]])[1],error=TRUE,version="upsetplot"){
   parm_est = as.matrix(read_param(filename=filename_param_fit))
   
   n = dim(matList$Fk[[1]])[1]
   
   # use combined_effects if necessary
   if(length(parm_est)==8){
-    Sigma_est <- CovMat_03(parm_est, matList,id_min=id_min, link=combined_matList)$Sigma
+    Sigma_est <- CovMat_03(parm_est, matList,adj_positions=adj_positions, link=combined_matList)$Sigma
   } else{
-    Sigma_est <- CovMat_03(parm_est, matList,id_min=id_min)$Sigma
+    Sigma_est <- CovMat_03(parm_est, matList,adj_positions=adj_positions)$Sigma
   }
   
   #Figure 1: The different effects of sigma
@@ -73,13 +73,13 @@ plot_param = function(matList, filename_true_param=NULL, filename_param_fit,
   if(!is.null(filename_true_param)){
     parm = as.matrix(read_param(filename=filename_true_param))
     if(error){
-      Sigma <- CovMat_03(parm, matList,id_min=id_min, link=combined_matList)$Sigma
+      Sigma <- CovMat_03(parm, matList,adj_positions=adj_positions, link=combined_matList)$Sigma
       df = as.data.frame(matrix(ncol=6,nrow=n*(n-1)/2))
       names(df) = c("error","correlation","comcol","region","neighbor","nothing")
       df$error = c(Sigma[upper.tri(Sigma)]-Sigma_est[upper.tri(Sigma_est)])
     } else{
       parm=c(.05,.09,.11,.26)
-      Sigma <- CovMat_03(parm, matList,id_min=id_min, combined_effects="FosdickRaftery")$Sigma
+      Sigma <- CovMat_03(parm, matList,adj_positions=adj_positions, combined_effects="FosdickRaftery")$Sigma
       df = as.data.frame(matrix(ncol=6,nrow=n*(n-1)/2))
       names(df) = c("estimate","correlation","comcol","region","neighbor","nothing")
       df$estimate = c(Sigma_est[upper.tri(Sigma_est)])
@@ -88,7 +88,7 @@ plot_param = function(matList, filename_true_param=NULL, filename_param_fit,
     df$comcol = c(matList$Fk[[1]][upper.tri(Sigma)])
     df$region = c(matList$Fk[[2]][upper.tri(Sigma)])
     matList$Al[[1]][is.na(matList$Al[[1]])]=0
-    df$neighbor = c(((matList$Al[[1]][id_min,id_min]!=0)+0)[upper.tri(Sigma)])
+    df$neighbor = c(((matList$Al[[1]][adj_positions,adj_positions]!=0)+0)[upper.tri(Sigma)])
     df$nothing = (1-df$comcol)*(1-df$region)*(1-df$neighbor)
     if(error){
       upset(df, boxplot.summary = c("correlation","error"))
@@ -110,18 +110,18 @@ plot_param = function(matList, filename_true_param=NULL, filename_param_fit,
     df$comcol = c(matList$Fk[[1]][upper.tri(Sigma_est)])
     df$region = c(matList$Fk[[2]][upper.tri(Sigma_est)])
     matList$Al[[1]][is.na(matList$Al[[1]])]=0
-    df$neighbor = c(((matList$Al[[1]][id_min,id_min]!=0)+0)[upper.tri(Sigma_est)])
+    df$neighbor = c(((matList$Al[[1]][adj_positions,adj_positions]!=0)+0)[upper.tri(Sigma_est)])
     df$nothing = (1-df$comcol)*(1-df$region)*(1-df$neighbor)
     upset(df, boxplot.summary = c("correlation"))
   }
 }
 
-plot_data = function(matList, names_by_id, id_min, show_names=TRUE){
+plot_data = function(matList, names_by_id, adj_positions, show_names=TRUE){
   par(mfrow=c(1,1))
   for(k in (1:2)){
     diag(matList$Fk[[k]])=0
     g3 <- graph_from_adjacency_matrix(as.matrix(matList$Fk[[k]]),mode="undirected")
-    V(g3)$name <- names_by_id[id_min]
+    V(g3)$name <- names_by_id[adj_positions]
     if(show_names){
       plot(g3, vertex.size =.1,vertex.label.cex=3/5)
     } else{
@@ -131,10 +131,10 @@ plot_data = function(matList, names_by_id, id_min, show_names=TRUE){
   }
   
   par(mfrow=c(1,1))
-  A = matList$Al[[1]][id_min,id_min]
+  A = matList$Al[[1]][adj_positions,adj_positions]
   A[is.na(A)] = 0
   g3 <- graph_from_adjacency_matrix(as.matrix((A!=0)+0),mode="undirected")
-  V(g3)$name <- names_by_id[id_min]
+  V(g3)$name <- names_by_id[adj_positions]
   if(show_names){
     plot(g3,vertex.size=.1,vertex.label.cex=3/5)
   } else{
@@ -144,7 +144,7 @@ plot_data = function(matList, names_by_id, id_min, show_names=TRUE){
   # only neighbor, but not comcol or region
   par(mfrow=c(1,1))
   g3 <- graph_from_adjacency_matrix(as.matrix((A!=0)*(matList$Fk[[1]]==0)*(matList$Fk[[2]]==0)+0),mode="undirected")
-  V(g3)$name <- names_by_id[id_min]
+  V(g3)$name <- names_by_id[adj_positions]
   if(show_names){
     plot(g3,vertex.size=.1,vertex.label.cex=3/5)
   } else{
@@ -157,7 +157,7 @@ plot_data = function(matList, names_by_id, id_min, show_names=TRUE){
   no_islands_id = apply(amatrix,1, function(a) sum(a)!=0)
   islands_id = (1-no_islands_id)==1
   g3 <- graph_from_adjacency_matrix(amatrix,mode="undirected")
-  V(g3)$name <- names_by_id[id_min]
+  V(g3)$name <- names_by_id[adj_positions]
   V(g3)$name[islands_id] = ""
   plot(g3,vertex.size=.1,vertex.label.cex=3/15)
 
@@ -167,7 +167,7 @@ plot_data = function(matList, names_by_id, id_min, show_names=TRUE){
   no_islands_id = apply(amatrix,1, function(a) sum(a)!=0)
   islands_id = (1-no_islands_id)==1
   g3 <- graph_from_adjacency_matrix(amatrix,mode="undirected")
-  V(g3)$name <- names_by_id[id_min]
+  V(g3)$name <- names_by_id[adj_positions]
   V(g3)$name[islands_id] = ""
   plot(g3,vertex.size=.1,vertex.label.cex=3/15)
   
@@ -177,7 +177,7 @@ plot_data = function(matList, names_by_id, id_min, show_names=TRUE){
   no_islands_id = apply(amatrix,1, function(a) sum(a)!=0)
   islands_id = (1-no_islands_id)==1
   g3 <- graph_from_adjacency_matrix(amatrix,mode="undirected")
-  V(g3)$name <- names_by_id[id_min]
+  V(g3)$name <- names_by_id[adj_positions]
   V(g3)$name[islands_id] = ""
   plot(g3,vertex.size=.1,vertex.label.cex=3/15)
 }
@@ -199,193 +199,170 @@ plot_sims = function(sims_errors_and_bic,filename, has_missingvalues=FALSE){
   df1=melt(df1)
   df1$MAE = df1$value
   df1$estimator=df1$variable
-  plot1 =ggplot(df1,aes(x=estimator,y=MAE)) + geom_boxplot()
+  plot1 =ggplot(df1,aes(x=estimator,y=MAE)) + geom_boxplot() +
+    theme(text = element_text(size = 25),
+          axis.text.x = element_text(angle = 45, hjust = 1)) + 
+    ylim(0,0.33)
   print(plot1)
-  ggsave(plot1,filename=filename, width=5.3,height=4.07,device="pdf")
+  ggsave(plot1,filename=filename, width=5.3,height=6.07,device="pdf")
 }
 
 # show the different average effects, 
 # and compute covarage of confidence intervals
-plot_param_sims = function(name, sims_params1, p, Sigma, 
-                           matList, sim_01_true_param, id_min,
-                           type="Chebyshef",return_plots=FALSE,return_only_CI=FALSE,
-                           link=NULL,link_der_rho=NULL){
-  #browser()
-  #matList$Gl[[1]] = calc_tilde_G_inv(matList$Ml[[1]],matList$Al[[1]],sims_params1[length(sims_params1)])[id_min,id_min]
-  if(return_only_CI){ # used to calculate CI for one parameter vector
-    #matList$Gl[[1]] = calc_tilde_G_inv(matList$Ml[[1]],matList$Al[[1]],sims_params1[length(sims_params1)])[id_min,id_min]
-    if(is.null(link) | is.null(link_der_rho)){
-      link = function(matList) c(matList$Fk,matList$Gl)
-      link_der_rho=link_der_simple
-    }
-    
-    asym_sds = sqrt(diag(solve(Fisher_information(id_min,
-                                                   sapply(sims_params1,function(s) s),
-                                                   matList,
-                                                   link=link,
-                                                   link_der_rho=link_der_simple))/p))
-    
-    eta_D_ders = eta_D_der(parm=sims_params1, matList=matList, id_min=id_min,
-                           link=link,link_der_rho=link_der_simple)
-    asym_sds[4] = sqrt(t(eta_D_ders)%*%(solve(Fisher_information(id_min,
-                                                                 sapply(c(sims_params1),function(t)t),
-                                                                 matList,
-                                                                 link=link,
-                                                                 link_der_rho=link_der_rho))[c(4,length(sims_params1)),c(4,length(sims_params1))]/p)%*%t(t(eta_D_ders)))
-    
-    if(length(sims_params1)>5){
-      #browser()
-      eta_D_ders = eta_D_der(parm=sims_params1, matList=matList, id_min=id_min,
-                             link=link,link_der_rho=link_der_simple,index = 5)
-      asym_sds[5] = sqrt(t(eta_D_ders)%*%(solve(Fisher_information(id_min,
-                                                                   sapply(c(sims_params1),function(t)t),
-                                                                   matList,
-                                                                   link=link,
-                                                                   link_der_rho=link_der_rho))[c(5,length(sims_params1)),c(5,length(sims_params1))]/p)%*%t(t(eta_D_ders)))
-      eta_D_ders = eta_D_der(parm=sims_params1, matList=matList, id_min=id_min,
-                             link=link,link_der_rho=link_der_simple,index = 6)
-      asym_sds[6] = sqrt(t(eta_D_ders)%*%(solve(Fisher_information(id_min,
-                                                                   sapply(c(sims_params1),function(t)t),
-                                                                   matList,
-                                                                   link=link,
-                                                                   link_der_rho=link_der_rho))[c(6,length(sims_params1)),c(6,length(sims_params1))]/p)%*%t(t(eta_D_ders)))
-    }
-    avg_effect_true = avg_effect(sapply(sims_params1,function(s)s), matList = matList,
-                                 id_min = id_min,link=link)
-    asym_sds = asym_sds[-1]
-    
-    # Create confidence intervals based on Chebyshev's inequality
-    df = as.data.frame(t(rbind(avg_effect_true-sqrt(20)*asym_sds,
-                               avg_effect_true,
-                               avg_effect_true+sqrt(20)*asym_sds)))
-    names(df) = c("lower","mid","upper")
-    return(df)
-    # change matList to obtain derivative of Hadamard product
-    #eta_A_D_ders = 
-  }
-  asym_sds = t(apply(sims_params1, 1, 
-                     function(s_params1) sqrt(diag(solve(Fisher_information(id_min,
-                                                                            sapply(s_params1,function(s) s),
-                                                                            matList,
-                                                                            link=function(matList) c(matList$Fk,matList$Gl),
-                                                                            link_der_rho=link_der_simple))/p))))
-  # combine sd for rho and delta to sd for eta via the Delta method
-  eta_D_ders = apply(sims_params1, 1, 
-                     function(s_params1) eta_D_der(parm=s_params1, matList=matList, id_min=id_min,
-                                                   link=function(matList) c(matList$Fk,matList$Gl),
-                                                   link_der_rho=link_der_simple))
-  asym_sds[,4] = sapply(1:nrow(sims_params1), function(s)  sqrt(t(eta_D_ders[,s])%*%
-                                                                  (solve(Fisher_information(id_min,
-                                                                                            sapply(c(sims_params1[s,]),function(t)t),
-                                                                                           matList,
-                                                                                           link=function(matList) c(matList$Fk,matList$Gl),
-                                                                                           link_der_rho=link_der_simple))[4:5,4:5]/p)%*%t(t(eta_D_ders[,s]))))
-  asym_sds=asym_sds[,1:4] # rho and delta are combined to eta_D
-  sqrt(sum(eta_D_ders[,1]^2))*asym_sds[1,4]
-
-  N <- nrow(asym_sds)
-  #browser()
-  avg_effect_true = avg_effect(sapply(sim_01_true_param,function(s)s), matList = matList,
-                               id_min = id_min,link=function(matList) c(matList$Fk,matList$Gl))
-  avg_effects = apply(sims_params1, 1, 
-                      function(s_params1)   avg_effect(sapply(s_params1,function(s) s), matList = matList,
-                                                       id_min = id_min,link=function(matList) c(matList$Fk,matList$Gl)))
-  
-  # calculate how often the parameter is included in the 
-  # 95 percent confidence interval (via normal distribution quantiles)
-  coverage = sapply(1:N,
-                    function(s) (avg_effects[,s]+qnorm(0.975)*asym_sds[s,] >= avg_effect_true) &
-                      (avg_effects[,s]-qnorm(0.975)*asym_sds[s,] <= avg_effect_true))
-  
-  print("normal confidence intervals")
-  print(apply(coverage,1,mean))
-  #browser()
-  print(mean(c(coverage)))
-  
-  # calculate how often the parameter is included in the 
-  # 95 percent confidence interval (via Chebyshef inequality)
-  coverage = sapply(1:N,
-                    function(s) (avg_effects[,s]+sqrt(20)*asym_sds[s,] >= avg_effect_true) &
-                      (avg_effects[,s]-sqrt(20)*asym_sds[s,] <= avg_effect_true))
-  
-  print("Chebyshef confidence intervals")
-  print(apply(coverage,1,mean))
-  #browser()
-  print(mean(c(coverage)))
-  
-  # sqrt(diag(solve(Fisher_information(1:nrow(Sigma),sapply(sims_params1[1,],function(s) s),
-  #                                    matList,
-  #                                    link=function(matList) c(matList$Fk,matList$Gl),
-  #                                    link_der_rho=link_der_simple))/p))
-  
-  ### TEST ###
-  if(type=="normal"){
-    estimate = as.data.frame(cbind(t(avg_effects),
-                                   t(avg_effects)+qnorm(0.975)*asym_sds,
-                                   t(avg_effects)-qnorm(0.975)*asym_sds))
-  } else{ #i.e., type is Chebyshef
-    estimate = as.data.frame(cbind(t(avg_effects),
-                                   t(avg_effects)+sqrt(20)*asym_sds,
-                                   t(avg_effects)-sqrt(20)*asym_sds))
-  }
-
-  names(estimate) = c(unique(names(estimate)),
-                           paste0("upper_",unique(names(estimate))),
-                           paste0("lower_",unique(names(estimate))))
-  estimate$jitter=1:40
-  
-  plot_comcol =   ggplot(estimate,aes(x=jitter,y=comcol)) + geom_point(size=0.5) + 
-    geom_errorbar(aes(ymin=lower_comcol,ymax=upper_comcol))+ ylab("") + 
-    geom_abline(intercept=avg_effect_true[1], slope=0,color="red") +
-    theme(axis.text.x=element_blank(), axis.ticks.x=element_blank()) + xlab("comcol")
-  plot_sameRegion =   ggplot(estimate,aes(x=jitter,y=reg)) + geom_point(size=0.5) + 
-    geom_errorbar(aes(ymin=lower_reg,ymax=upper_reg))+ ylab("") + 
-    geom_abline(intercept=avg_effect_true[2], slope=0,color="red") +
-    theme(axis.text.x=element_blank(), axis.ticks.x=element_blank()) + xlab("sameRegion")
-  plot_intercept =   ggplot(estimate,aes(x=jitter,y=global)) + geom_point(size=0.5) + 
-    geom_errorbar(aes(ymin=lower_global,ymax=upper_global))+ ylab("") + 
-    geom_abline(intercept=avg_effect_true[3], slope=0,color="red") +
-    theme(axis.text.x=element_blank(), axis.ticks.x=element_blank()) + xlab("intercept")
-  plot_contig =   ggplot(estimate,aes(x=jitter,y=contig.beta)) + geom_point(size=0.5) + 
-    geom_errorbar(aes(ymin=lower_contig.beta,ymax=upper_contig.beta))+ ylab("") + 
-    geom_abline(intercept=avg_effect_true[4], slope=0,color="red") +
-    theme(axis.text.x=element_blank(), axis.ticks.x=element_blank()) + xlab("contig")
-  ### TEST ###
-
-  #browser()
-  
-  # plot_comcol = ggplot(as.data.frame(t(avg_effects)),aes(y=comcol)) + 
-  #   geom_boxplot() + xlab("comcol") + ylab("") + 
-  #   geom_abline(intercept=avg_effect_true[1], slope=0,color="red") +
-  #   theme(axis.text.x=element_blank(), axis.ticks.x=element_blank())
-  # plot_sameRegion = ggplot(as.data.frame(t(avg_effects)),aes(y=reg)) + 
-  #   geom_boxplot() + xlab("sameRegion") + ylab("") +
-  #   geom_abline(intercept=avg_effect_true[2], slope=0,color="red") +
-  #   theme(axis.text.x=element_blank(), axis.ticks.x=element_blank())
-  # plot_intercept = ggplot(as.data.frame(t(avg_effects)),aes(y=global)) +
-  #   geom_boxplot() + xlab("intercept") + ylab("") +
-  #   geom_abline(intercept=avg_effect_true[3], slope=0,color="red") +
-  #   theme(axis.text.x=element_blank(), axis.ticks.x=element_blank())
-  # plot_contig = ggplot(as.data.frame(t(avg_effects)),aes(y=contig.beta)) + 
-  #   geom_boxplot() + xlab("contig") + ylab("") +
-  #   geom_abline(intercept=avg_effect_true[4], slope=0,color="red") +
-  #   theme(axis.text.x=element_blank(), axis.ticks.x=element_blank())
-  
-  if(return_plots){
-    return(list(plot_comcol=plot_comcol,
-                plot_sameRegion=plot_sameRegion,
-                plot_intercept=plot_intercept,
-                plot_contig = plot_contig))
-  } else{
-    ggsave(name,grid.arrange(plot_comcol,plot_sameRegion,plot_intercept,plot_contig,ncol=4),
-           width=10.6,height=8.14)
-  }
-}
+# plot_param_sims = function(name, sims_params1, p, Sigma, 
+#                            matList, sim_01_true_param, adj_positions,
+#                            type="Chebyshef",return_plots=FALSE,return_only_CI=FALSE,
+#                            link=NULL,link_der_beta=NULL){
+#   #browser()
+#   #matList$Gl[[1]] = calc_tilde_G_inv(matList$Ml[[1]],matList$Al[[1]],sims_params1[length(sims_params1)])[adj_positions,adj_positions]
+#   if(return_only_CI){ # used to calculate CI for one parameter vector
+#     #matList$Gl[[1]] = calc_tilde_G_inv(matList$Ml[[1]],matList$Al[[1]],sims_params1[length(sims_params1)])[adj_positions,adj_positions]
+#     if(is.null(link) | is.null(link_der_beta)){
+#       link = function(matList) list(matList_full=c(matList$Fk,matList$Gl))
+#       link_der_beta=link_der_simple
+#     }
+#     
+#     asym_sds = sqrt(diag(solve(Fisher_information(adj_positions,
+#                                                    sapply(sims_params1,function(s) s),
+#                                                    matList,
+#                                                    link=link,
+#                                                    link_der_beta=link_der_simple))/p))
+#     
+#     eta_D_ders = eta_D_der(parm=sims_params1, matList=matList, adj_positions=adj_positions,
+#                            link=link,link_der_beta=link_der_simple)
+#     asym_sds[4] = sqrt(t(eta_D_ders)%*%(solve(Fisher_information(adj_positions,
+#                                                                  sapply(c(sims_params1),function(t)t),
+#                                                                  matList,
+#                                                                  link=link,
+#                                                                  link_der_beta=link_der_beta))[c(4,length(sims_params1)),c(4,length(sims_params1))]/p)%*%t(t(eta_D_ders)))
+#     
+#     if(length(sims_params1)>5){
+#       #browser()
+#       eta_D_ders = eta_D_der(parm=sims_params1, matList=matList, adj_positions=adj_positions,
+#                              link=link,link_der_beta=link_der_simple,index = 5)
+#       asym_sds[5] = sqrt(t(eta_D_ders)%*%(solve(Fisher_information(adj_positions,
+#                                                                    sapply(c(sims_params1),function(t)t),
+#                                                                    matList,
+#                                                                    link=link,
+#                                                                    link_der_beta=link_der_beta))[c(5,length(sims_params1)),c(5,length(sims_params1))]/p)%*%t(t(eta_D_ders)))
+#       eta_D_ders = eta_D_der(parm=sims_params1, matList=matList, adj_positions=adj_positions,
+#                              link=link,link_der_beta=link_der_simple,index = 6)
+#       asym_sds[6] = sqrt(t(eta_D_ders)%*%(solve(Fisher_information(adj_positions,
+#                                                                    sapply(c(sims_params1),function(t)t),
+#                                                                    matList,
+#                                                                    link=link,
+#                                                                    link_der_beta=link_der_beta))[c(6,length(sims_params1)),c(6,length(sims_params1))]/p)%*%t(t(eta_D_ders)))
+#     }
+#     avg_effect_true = avg_effect(sapply(sims_params1,function(s)s), matList = matList,
+#                                  adj_positions = adj_positions,link=link)
+#     asym_sds = asym_sds[-1]
+#     
+#     # Create confidence intervals based on Chebyshev's inequality
+#     df = as.data.frame(t(rbind(avg_effect_true-sqrt(20)*asym_sds,
+#                                avg_effect_true,
+#                                avg_effect_true+sqrt(20)*asym_sds)))
+#     names(df) = c("lower","mid","upper")
+#     return(df)
+#     # change matList to obtain derivative of Hadamard product
+#     #eta_A_D_ders = 
+#   }
+#   asym_sds = t(apply(sims_params1, 1, 
+#                      function(s_params1) sqrt(diag(solve(Fisher_information(adj_positions,
+#                                                                             sapply(s_params1,function(s) s),
+#                                                                             matList,
+#                                                                             link=function(matList) list(matList_full=c(matList$Fk,matList$Gl)),
+#                                                                             link_der_beta=link_der_simple))/p))))
+#   # combine sd for beta and delta to sd for eta via the Delta method
+#   eta_D_ders = apply(sims_params1, 1, 
+#                      function(s_params1) eta_D_der(parm=s_params1, matList=matList, adj_positions=adj_positions,
+#                                                    link=function(matList) list(matList_full=c(matList$Fk,matList$Gl)),
+#                                                    link_der_beta=link_der_simple))
+#   asym_sds[,4] = sapply(1:nrow(sims_params1), function(s)  sqrt(t(eta_D_ders[,s])%*%
+#                                                                   (solve(Fisher_information(adj_positions,
+#                                                                                             sapply(c(sims_params1[s,]),function(t)t),
+#                                                                                            matList,
+#                                                                                            link=function(matList) list(matList_full=c(matList$Fk,matList$Gl)),
+#                                                                                            link_der_beta=link_der_simple))[4:5,4:5]/p)%*%t(t(eta_D_ders[,s]))))
+#   asym_sds=asym_sds[,1:4] # beta and delta are combined to eta_D
+#   sqrt(sum(eta_D_ders[,1]^2))*asym_sds[1,4]
+# 
+#   N <- nrow(asym_sds)
+#   #browser()
+#   avg_effect_true = avg_effect(sapply(sim_01_true_param,function(s)s), matList = matList,
+#                                adj_positions = adj_positions,link=function(matList) list(matList_full=c(matList$Fk,matList$Gl)))
+#   avg_effects = apply(sims_params1, 1, 
+#                       function(s_params1)   avg_effect(sapply(s_params1,function(s) s), matList = matList,
+#                                                        adj_positions = adj_positions,link=function(matList) list(matList_full=c(matList$Fk,matList$Gl))))
+#   
+#   # calculate how often the parameter is included in the 
+#   # 95 percent confidence interval (via normal distribution quantiles)
+#   coverage = sapply(1:N,
+#                     function(s) (avg_effects[,s]+qnorm(0.975)*asym_sds[s,] >= avg_effect_true) &
+#                       (avg_effects[,s]-qnorm(0.975)*asym_sds[s,] <= avg_effect_true))
+#   
+#   print("normal confidence intervals")
+#   print(apply(coverage,1,mean))
+#   #browser()
+#   print(mean(c(coverage)))
+#   
+#   # calculate how often the parameter is included in the 
+#   # 95 percent confidence interval (via Chebyshef inequality)
+#   coverage = sapply(1:N,
+#                     function(s) (avg_effects[,s]+sqrt(20)*asym_sds[s,] >= avg_effect_true) &
+#                       (avg_effects[,s]-sqrt(20)*asym_sds[s,] <= avg_effect_true))
+#   
+#   print("Chebyshef confidence intervals")
+#   print(apply(coverage,1,mean))
+#   #browser()
+#   print(mean(c(coverage)))
+# 
+#   if(type=="normal"){
+#     estimate = as.data.frame(cbind(t(avg_effects),
+#                                    t(avg_effects)+qnorm(0.975)*asym_sds,
+#                                    t(avg_effects)-qnorm(0.975)*asym_sds))
+#   } else{ #i.e., type is Chebyshef
+#     estimate = as.data.frame(cbind(t(avg_effects),
+#                                    t(avg_effects)+sqrt(20)*asym_sds,
+#                                    t(avg_effects)-sqrt(20)*asym_sds))
+#   }
+# 
+#   names(estimate) = c(unique(names(estimate)),
+#                            paste0("upper_",unique(names(estimate))),
+#                            paste0("lower_",unique(names(estimate))))
+#   estimate$jitter=1:40
+#   
+#   plot_comcol =   ggplot(estimate,aes(x=jitter,y=comcol)) + geom_point(size=0.5) + 
+#     geom_errorbar(aes(ymin=lower_comcol,ymax=upper_comcol))+ ylab("") + 
+#     geom_abline(intercept=avg_effect_true[1], slope=0,color="red") +
+#     theme(axis.text.x=element_blank(), axis.ticks.x=element_blank()) + xlab("comcol")
+#   plot_sameRegion =   ggplot(estimate,aes(x=jitter,y=reg)) + geom_point(size=0.5) + 
+#     geom_errorbar(aes(ymin=lower_reg,ymax=upper_reg))+ ylab("") + 
+#     geom_abline(intercept=avg_effect_true[2], slope=0,color="red") +
+#     theme(axis.text.x=element_blank(), axis.ticks.x=element_blank()) + xlab("sameRegion")
+#   plot_intercept =   ggplot(estimate,aes(x=jitter,y=global)) + geom_point(size=0.5) + 
+#     geom_errorbar(aes(ymin=lower_global,ymax=upper_global))+ ylab("") + 
+#     geom_abline(intercept=avg_effect_true[3], slope=0,color="red") +
+#     theme(axis.text.x=element_blank(), axis.ticks.x=element_blank()) + xlab("intercept")
+#   plot_contig =   ggplot(estimate,aes(x=jitter,y=contig.delta)) + geom_point(size=0.5) + 
+#     geom_errorbar(aes(ymin=lower_contig.delta,ymax=upper_contig.delta))+ ylab("") + 
+#     geom_abline(intercept=avg_effect_true[4], slope=0,color="red") +
+#     theme(axis.text.x=element_blank(), axis.ticks.x=element_blank()) + xlab("contig")
+#   
+#   if(return_plots){
+#     return(list(plot_comcol=plot_comcol,
+#                 plot_sameRegion=plot_sameRegion,
+#                 plot_intercept=plot_intercept,
+#                 plot_contig = plot_contig))
+#   } else{
+#     ggsave(name,grid.arrange(plot_comcol,plot_sameRegion,plot_intercept,plot_contig,ncol=4),
+#            width=10.6,height=8.14)
+#   }
+# }
 
 plot_heatmaps = function(matList, 
                          Sigma, Sigma2=NULL, Sigma3=NULL, 
                          filename, show_regions=FALSE,
-                         names_by_id=NULL, id_min=NULL,
+                         names_by_id=NULL, adj_positions=NULL,
                          iso3=NULL, info_coutries=NULL, Sigma_true=Sigma,
                          Sigma_cluster=Sigma, main_range=NULL, main_color=NULL){
   set.seed(1)
@@ -421,8 +398,8 @@ plot_heatmaps = function(matList,
   if(show_regions==TRUE){
     df = Sigma[unique(order_y),unique(order_y)][1:length(unique(order_y)),length(unique(order_y)):1]
     df = as.data.frame(df)
-    rownames(df)=paste(dim(Sigma)[1]:1,(names_by_id[id_min])[unique(order_y)])
-    colnames(df)=paste(1:dim(Sigma)[1],(names_by_id[id_min])[unique(order_y)])
+    rownames(df)=paste(dim(Sigma)[1]:1,(names_by_id[adj_positions])[unique(order_y)])
+    colnames(df)=paste(1:dim(Sigma)[1],(names_by_id[adj_positions])[unique(order_y)])
     comcol_mat = matList$Fk[[1]][unique(order_y),unique(order_y)]
     
     # # find the different colonizers and regions
@@ -472,7 +449,7 @@ plot_heatmaps = function(matList,
     comcol_res_vec=sapply(as.numeric(comcol_res_vec),function(s) letters[s])
     Sigma_countries <- Sigma_true %>% 
       as.data.frame() %>% 
-      mutate(iso3 =  iso3[id_min] ) %>% 
+      mutate(iso3 =  iso3[adj_positions] ) %>% 
       left_join(info_coutries, by =c( "iso3" = "ISO3 Alpha-code"))
     
     continent_names = rep("others",195)
@@ -528,31 +505,7 @@ plot_heatmaps = function(matList,
     
     h_order = hclust(as.dist(1-Sigma_cluster))$order
     df=as.data.frame(Sigma)
-    names(df) = names_by_id[id_min]
-    
-    ###
-    # browser()
-    # # library(GGally)
-    # data_Y= as.data.frame(sim_final$Y)
-    # names(data_Y) = names_by_id[id_min]
-    # df_selected = cbind(data_Y$Germany,
-    #                     data_Y$France,
-    #                     data_Y$Switzerland,
-    #                     data_Y$Luxembourg,
-    #                     data_Y$`Republic of Korea`)
-    # colnames(df_selected)=c("Germany","France","Switzerland","Luxembourg","Republic of Korea")
-    # pairs(df_selected)
-    # # Custom panel function to add regression line
-    # panel.lm <- function(x, y, ...) {
-    #   points(x, y, ...)
-    #   abline(lm(y ~ x), col = "red")
-    # }
-    # 
-    # # Scatterplot matrix with regression lines
-    # pairs(df_selected, lower.panel = panel.lm, upper.panel = panel.lm)
-    
-    # ggpairs(df_selected,columns=1:5,lower=list(continuous="smooth"))
-    ###
+    names(df) = names_by_id[adj_positions]
     
     df = df[h_order, h_order][195:1,]
     df_col = paste0(195:1," ",colnames(df))
@@ -670,17 +623,6 @@ plot_heatmaps = function(matList,
     p[[2]]=p[[2]] + theme_minimal(base_size = 0) + theme(legend.position = "None")
     p[[3]]=p[[3]] + theme_minimal(base_size = 0) + theme(legend.position = "None")
     ggsave(filename, p, device="jpeg", width=20, height=20)
-
-    #library(cowplot)
-    #legend1 <- cowplot::get_legend(p[[1]])
-    #legend2 <- cowplot::get_legend(p[[2]])
-    #legend3 <- cowplot::get_legend(p[[3]])
-
-    #plot2=grid.arrange(legend2[[1]][[1]],legend3[[1]][[1]],legend1[[1]][[1]])
-    #plot2=grid.arrange(legend1[[1]][[1]],legend2[[1]][[1]],legend3[[1]][[1]],nrow=1)
-
-    #ggsave("atelier/sim_final_n195_full_data_covmat_legend.pdf",plot2, device="pdf", width=12, height=9.5)
-    #print(median(df[df<0]))
     
     return(list(main_range=range(df),main_color=main_color))
     

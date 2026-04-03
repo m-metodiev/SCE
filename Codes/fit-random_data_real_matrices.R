@@ -45,7 +45,7 @@ all_min = read_names$all_min
 preproc_res = preproc_FITcomps_std(all_min, names_by_id, FITcomps_std, covar)
 matList_final = preproc_res$matList_final
 dim(matList_final$Fk[[1]])
-id_min = preproc_res$id_min
+adj_positions = preproc_res$adj_positions
 
 # Parms
 dimension <- 195; num_observations <- 11; beta = .35
@@ -54,17 +54,18 @@ matList2 = matList_final
 write_matList(matList=matList2, filename=paste(data_source,"sim_02_matList.csv",sep=""))
 
 parm = c(.05,0.09,.11,.74,beta)
-write_param(t(parm),matList=matList2,
-            filename=paste(data_source,"sim_02_true_param.csv",sep=""))
+# write_param(t(parm),matList=matList2,
+#             filename=paste(data_source,"sim_02_true_param.csv",sep=""))
 
-test = calc_tilde_G_inv(matList2$Ml[[1]],matList2$Al[[1]],beta)[id_min,id_min]
+test = tilde_G_inv(matList2$Ml[[1]],matList2$Al[[1]],beta)[adj_positions,adj_positions]
 diag(test)=0
 max(test)*.74#maximum neighbor effect around .26
-G_inv = calc_tilde_G_inv(matList2$Ml[[1]],matList2$Al[[1]],beta)[id_min,id_min]
-A = matList2$Al[[1]][id_min,id_min]
+G_inv = tilde_G_inv(matList2$Ml[[1]],matList2$Al[[1]],beta)[adj_positions,adj_positions]
+A = matList2$Al[[1]][adj_positions,adj_positions]
 A[is.na(A)] = 0 # since islands can return NA-values
+matList2$Gl[[1]] = G_inv
 
-covMat <- CovMat_03(parm, matList2,id_min=id_min)
+covMat <- CovMat_03(parm, matList2,adj_positions=adj_positions)
 Sigma <- covMat$Sigma#cov2cor(covMat$Sigma)
 
 ## END Initialization ##
@@ -72,8 +73,9 @@ Sigma <- covMat$Sigma#cov2cor(covMat$Sigma)
 ## BEGIN one simulation ##
 
 sim2 = sim_cov(num_observations, as.matrix(Sigma))
+names(matList2$Fk) = c("comcol","sameRegion","intercept")
 source("functions/cov_TFR_fit_funcs.R")
-fit_param(dimension, num_observations, matList2, sim2, Sigma=Sigma, id_min=id_min,
+fit_param(dimension, num_observations, matList2, sim2, Sigma=Sigma, adj_positions=adj_positions,
           filename_param_fit=paste(data_source,"sim_02_param_fit.csv",sep=""),
           filename_ests = paste(data_source,"sim_02_ests.csv",sep=""),
           filename_bic = paste(data_source,"sim_02_bic.csv",sep=""),
@@ -81,7 +83,7 @@ fit_param(dimension, num_observations, matList2, sim2, Sigma=Sigma, id_min=id_mi
           compute_WSCE = TRUE)
 read.csv(file=paste(data_source,"sim_02_error_measures.csv",sep=""))
 
-fit_param(dimension, num_observations, matList2, sim2, Sigma=Sigma, id_min=id_min,
+fit_param(dimension, num_observations, matList2, sim2, Sigma=Sigma, adj_positions=adj_positions,
           filename_param_fit=paste(data_source,"sim_02_param_fit_musigma_unknown.csv",sep=""),
           filename_ests = paste(data_source,"sim_02_ests_musigma_unknown.csv",sep=""),
           filename_bic = paste(data_source,"sim_02_bic_musigma_unknown.csv",sep=""),
@@ -94,34 +96,55 @@ read.csv(file=paste(data_source,"sim_02_error_measures_musigma_unknown.csv",sep=
 ## BEGIN many simulations for mu and sigma known ##
 set.seed(seed)
 num_sim=40
+names(matList2$Fk) = c("comcol","sameRegion","intercept")
 sim_func = function(seed) sim_cov_with_seed(num_observations, as.matrix(Sigma), seed)
-fit1_func = function(sim) fit_param(dimension, num_observations, matList2, sim, id_min=id_min,
+fit1_func = function(sim) fit_param(dimension, num_observations, matList2, sim, adj_positions=adj_positions,
                                     filename_error_measures=TRUE,save=FALSE,Sigma=as.matrix(Sigma),
                                     compute_WSCE = TRUE)
-fit2_func = function(sim) fit_param(dimension, num_observations, matList2, sim, id_min=id_min,
+fit2_func = function(sim) fit_param(dimension, num_observations, matList2, sim, adj_positions=adj_positions,
                                     filename_error_measures = TRUE,
-                                    link=combined_matList, link_der_beta = link_der_combined,
+                                    interaction_effects=list(c("comcol","sameRegion"),
+                                                             c("comcol","spatial"),
+                                                             c("sameRegion","spatial")),
                                     save=FALSE,Sigma=as.matrix(Sigma), compute_WSCE = TRUE)
 sims_errors_and_bic = sim_errors_and_bic(sim_func,fit1_func,fit2_func,num_sim)
 write.csv(sims_errors_and_bic,
           file=paste(data_source,"sim_02_sims_errors_and_bic.csv",sep=""))
 ## END many simulations for mu and sigma known ##
 
-## BEGIN many simulations for mu and sigma unknown ##
+## BEGIN many simulations for mu and sigma unknown 2step ##
 set.seed(seed)
 num_sim=40
 sim_func = function(seed) sim_cov_with_seed(num_observations, as.matrix(Sigma), seed)
-fit1_func = function(sim) fit_param(dimension, num_observations, matList2, sim, id_min=id_min,
+fit1_func = function(sim) fit_param(dimension, num_observations, matList2, sim, adj_positions=adj_positions,
                                     filename_error_measures=TRUE,save=FALSE,Sigma=as.matrix(Sigma),
                                     compute_WSCE = TRUE,normalize_data = TRUE)
-fit2_func = function(sim) fit_param(dimension, num_observations, matList2, sim, id_min=id_min,
+fit2_func = function(sim) fit_param(dimension, num_observations, matList2, sim, adj_positions=adj_positions,
                                     filename_error_measures = TRUE,
-                                    link=combined_matList, link_der_beta = link_der_combined,
+                                    interaction_effects=list(c("comcol","sameRegion"),
+                                                             c("comcol","spatial"),
+                                                             c("sameRegion","spatial")),
                                     save=FALSE,Sigma=as.matrix(Sigma), compute_WSCE = TRUE, normalize_data = TRUE)
 sims_errors_and_bic = sim_errors_and_bic(sim_func,fit1_func,fit2_func,num_sim)
 write.csv(sims_errors_and_bic,
           file=paste(data_source,"sim_02_sims_errors_and_bic_musigma_unknown.csv",sep=""))
-## END many simulations for mu and sigma known ##
+## END many simulations for mu and sigma known 2step ##
+
+## BEGIN many simulations for mu and sigma unknown  1step ##
+set.seed(seed)
+num_sim=40
+sim_func = function(seed) sim_cov_with_seed(num_observations, as.matrix(Sigma), seed)
+fit1_func = function(sim) fit_param(dimension, num_observations, matList2, sim, adj_positions=adj_positions,
+                                    filename_error_measures=TRUE,save=FALSE,Sigma=as.matrix(Sigma),
+                                    compute_WSCE = TRUE,normalize_data = TRUE,joint_estimation=TRUE)
+# WARNING: interaction effects were removed to save computation time
+fit2_func = function(sim) fit_param(dimension, num_observations, matList2, sim, adj_positions=adj_positions,
+                                    filename_error_measures=TRUE,save=FALSE,Sigma=as.matrix(Sigma),
+                                    compute_WSCE = TRUE,normalize_data = TRUE,joint_estimation=TRUE)
+sims_errors_and_bic = sim_errors_and_bic(sim_func,fit1_func,fit2_func,num_sim)
+write.csv(sims_errors_and_bic,
+          file=paste(data_source,"sim_02_sims_errors_and_bic_musigma_unknown_1step.csv",sep=""))
+## END many simulations for mu and sigma known 1step ##
 
 ## BEGIN read in data about regions ##
 
@@ -169,7 +192,7 @@ info_coutries <- countries_num %>%
 Sigma = as.matrix(Sigma)
 Sigma_countries <- Sigma %>% 
   as.data.frame() %>% 
-  mutate(iso3 =  iso3[id_min] ) %>% 
+  mutate(iso3 =  iso3[adj_positions] ) %>% 
   left_join(info_coutries, by =c( "iso3" = "ISO3 Alpha-code"))
 Sigma_countries$reg_name
 
@@ -204,24 +227,23 @@ lambdas = matrix(ncol=length(index_n),nrow=40)
 
 for(N in 1:40){
   for(i in seq_along(index_n)){
-    
     Sigma_stretched = Sigma[index_n[[i]],index_n[[i]]]
     sim2 = sim_cov_with_seed(num_observations, as.matrix(Sigma),seed=N)
     sim_stretched = sim2
-    sim_stretched$Y = sim2$Y[,index_n[[i]]]
-    sim_stretched$corY = cor_from_standard_errors(sim_stretched$Y)
+    sim_stretched$dataset = sim2$dataset[,index_n[[i]]]
+    sim_stretched$correlation_matrix = cor_from_standard_errors(sim_stretched$dataset)
 
     for(k in (1:3)){
       matList1$Fk[[k]] = matList2$Fk[[k]][index_n[[i]],index_n[[i]]]
     }
     res_list_known[[i]] = c(fit_param(length(index_n[[i]]), num_observations, matList1, sim_stretched, 
-                                id_min=id_min[index_n[[i]]], save=FALSE,
+                                adj_positions=adj_positions[index_n[[i]]], save=FALSE,
                                 filename_error_measures=TRUE,
                                 Sigma=Sigma_stretched, 
                                 compute_WSCE = TRUE),list(sim_stretched))
     res_list_unknown[[i]] = c(fit_param(length(index_n[[i]]), num_observations, matList1, 
                                         sim_stretched, 
-                                        id_min=id_min[index_n[[i]]], save=FALSE,
+                                        adj_positions=adj_positions[index_n[[i]]], save=FALSE,
                                         filename_error_measures=TRUE,
                                         Sigma=Sigma_stretched, 
                                         compute_WSCE = TRUE, 
@@ -272,8 +294,8 @@ set.seed(seed)
 Sigma_extra = CovMat_03(as.matrix(sim_01_true_param), matList3)$Sigma
 
 set.seed(seed)
-Y = FITcomps_std_total[2:12,which(all_min==1)]
-Y = Y[,sapply(id_min,function(id) which(preproc_res$FITcomps_std_iso==preproc_res$iso_id_key[id]))]
+dataset = FITcomps_std_total[2:12,which(all_min==1)]
+dataset = dataset[,sapply(adj_positions,function(id) which(preproc_res$FITcomps_std_iso==preproc_res$iso_id_key[id]))]
 
 # Compute performance over model misspecification
 extra_matrix = Sigma_extra[1:195,1:195]#cov2cor(rWishart(1,n,Sigma=Sigma2)[,,1])
@@ -296,7 +318,7 @@ for(N in 1:N_samples){
     sim_stretched = sim_cov_with_seed(num_observations, Sigma_stretched,seed=N)
     
     res_list[[i]] = c(fit_param(dimension, num_observations, matList1, sim_stretched, 
-                                id_min=id_min, save=FALSE,
+                                adj_positions=adj_positions, save=FALSE,
                                 filename_error_measures=TRUE,
                                 Sigma=Sigma_stretched,compute_WSCE = TRUE),list(sim_stretched))
     lambdas[N,i]=res_list[[i]][[4]]
@@ -345,8 +367,8 @@ set.seed(seed)
 Sigma_extra = CovMat_03(as.matrix(sim_01_true_param), matList3)$Sigma
 
 set.seed(seed)
-Y = FITcomps_std_total[2:12,which(all_min==1)]
-Y = Y[,sapply(id_min,function(id) which(preproc_res$FITcomps_std_iso==preproc_res$iso_id_key[id]))]
+dataset = FITcomps_std_total[2:12,which(all_min==1)]
+dataset = dataset[,sapply(adj_positions,function(id) which(preproc_res$FITcomps_std_iso==preproc_res$iso_id_key[id]))]
 
 # Compute performance over model misspecification
 extra_matrix = Sigma_extra[1:195,1:195]
@@ -368,10 +390,10 @@ for(N in 1:N_samples){
   for(i in seq_along(lambda_vec)){
     Sigma_stretched = lambda_vec[i]*extra_matrix + (1-lambda_vec[i])*as.matrix(Sigma)
     sim_stretched = sim_cov_with_seed(num_observations, Sigma_stretched,seed=N)
-    sim_stretched$Y[is.na(Y)] = NA
+    sim_stretched$dataset[is.na(dataset)] = NA
 
     res_list[[i]] = c(fit_param(dimension, num_observations, matList1, sim_stretched, 
-                                id_min=id_min, save=FALSE,
+                                adj_positions=adj_positions, save=FALSE,
                                 filename_error_measures=TRUE,
                                 Sigma=Sigma_stretched,compute_WSCE = TRUE),list(sim_stretched))
     lambdas[N,i]=res_list[[i]][[4]]
